@@ -62,11 +62,10 @@ export const Background = () => {
 	const [height, setHeight] = useState(0);
 
 	useEffect(() => {
-		console.log("width", width, "height", height);
 		const checker = setInterval(() => {
-			if (width !== window.innerWidth || height !== window.innerHeight) {
-				setWidth(window.innerWidth);
-				setHeight(window.innerHeight);
+			if (width !== document.body.offsetWidth || height !== document.body.offsetHeight) {
+				setWidth(document.body.offsetWidth);
+				setHeight(document.body.offsetHeight);
 			}
 		}, 200);
 		const canvas = {

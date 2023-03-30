@@ -3,3 +3,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+canvas {
+	position: absolute;
+	top: 0;
+    z-index: -10;
+	background: #000;
+}
