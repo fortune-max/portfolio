@@ -8,7 +8,7 @@ type Photo = {
 
 export const Gallery = ({ photos }: { photos: Photo[]}) => {
     return (
-        <div className="flex flex-col p-4 bg-black gap-4 m-12 rounded-xl">
+        <div className="flex flex-col p-4 bg-black gap-4 m-12 rounded-xl opacity-90">
             <p className="text-primary">&gt; Gallery 📸</p>
             <div>
                 {photos.map((photo, idx) => (

@@ -1,6 +1,6 @@
 export const Awards = () => {
     return (
-        <div className="flex flex-col p-4 bg-black gap-4 m-12 rounded-xl text-primary">
+        <div className="flex flex-col p-4 bg-black gap-4 m-12 rounded-xl text-primary opacity-90">
             <p>&gt; Awards 🏆</p>
             <div>
                 <ul className="list-disc px-8 flex flex-col gap-4">

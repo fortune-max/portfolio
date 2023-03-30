@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export const Header = () => {
     return (
-        <div className="h-16 flex p-4 bg-black items-center sticky top-0">
+        <div className="h-16 flex p-4 bg-black items-center sticky top-0 z-10">
             <div className="text-primary">
                 <span>fme&gt;</span>
                 <motion.span

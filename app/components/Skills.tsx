@@ -2,7 +2,7 @@ import { Progress } from "./Progress";
 
 export const Skills = () => {
     return (
-        <div className="flex flex-col gap-4 p-4 bg-black m-12 rounded-xl text-primary ">
+        <div className="flex flex-col gap-4 p-4 bg-black m-12 rounded-xl text-primary opacity-90">
             <p>&gt; Skills.txt 🧐</p>
             <div className="flex gap-5 flex-col md:flex-row md:gap-24">
                 <div className="text-primary flex gap-5 flex-col">
