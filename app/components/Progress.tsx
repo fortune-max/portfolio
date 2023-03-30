@@ -1,12 +1,18 @@
-export const Progress = ({ percentage, width=30 } : { percentage: number, width?: number }) => {
-    const equalCount = Math.round(percentage / 100 * width) - 1;
-    const spaceCount = width - equalCount;
+import { motion } from 'framer-motion';
 
+export const Progress = ({ percentage } : { percentage: number }) => {
     return (
         <div className="text-primary">
-            <span>{`[${'='.repeat(equalCount)}>`}</span>
-            {Array.from({ length: spaceCount }).map((_, i) => <span key={i}>&nbsp;</span>)}
-            <span>{`${percentage}%]`}</span>
+            <div className='flex gap-4 items-center'>
+                <motion.div
+                    className="w-[100px] h-2 bg-primary inline-block"
+                    initial={{ width: '0%' }}
+                    whileInView={{ width: `${percentage}%` }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1 }}
+                />
+                <span>{`${percentage}%`}</span>
+            </div>
         </div>
     )
 };
