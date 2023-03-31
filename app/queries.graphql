@@ -1,0 +1,25 @@
+query WorkExperiences {
+  workExperiences {
+    description
+    duration
+    position
+    technologies
+    title
+  }
+}
+
+query Photos {
+    photos {
+        description
+        alt
+        src
+    }
+}
+
+query PhotosSecond($skip: Int) {
+    photos(skip: $skip) {
+        description
+        alt
+        src
+    }
+}
