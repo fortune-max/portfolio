@@ -5,13 +5,19 @@
     "build": "remix build",
     "dev": "remix dev",
     "start": "remix-serve build",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
+    "@graphql-codegen/cli": "^3.2.2",
+    "@graphql-codegen/typescript": "^3.0.2",
+    "@graphql-codegen/typescript-graphql-request": "^4.5.9",
+    "@graphql-codegen/typescript-operations": "^3.0.2",
     "@remix-run/node": "^1.14.3",
     "@remix-run/react": "^1.14.3",
     "@remix-run/serve": "^1.14.3",
     "framer": "^2.3.0",
+    "graphql-request": "^5.1.0",
     "isbot": "^3.6.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
