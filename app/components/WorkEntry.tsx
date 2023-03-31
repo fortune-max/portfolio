@@ -1,12 +1,8 @@
-export type WorkEntryProps = {
-    title: string;
-    position: string;
-    duration: string;
-    description: string;
-    technologies: string[];
-};
+import type { WorkExperience } from "~/generated/graphql";
 
-export const WorkEntry = ({ workEntry }: { workEntry: WorkEntryProps }) => {
+type Work = Pick<WorkExperience, "title" | "position" | "duration" | "description"> & { technologies?: string[] };
+
+export const WorkEntry = ({ workEntry }: { workEntry: Work }) => {
     return (
         <div className="flex flex-col gap-4">
             <div className="flex justify-between">
@@ -20,7 +16,7 @@ export const WorkEntry = ({ workEntry }: { workEntry: WorkEntryProps }) => {
                 <p>{workEntry.description}</p>
                 <div className="flex flex-wrap gap-2">
                     <ul>
-                        {workEntry.technologies.map((technology, idx) => (
+                        {workEntry.technologies?.map((technology, idx) => (
                             <li 
                                 className="list-disc"
                                 key={idx}>{technology}</li>

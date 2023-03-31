@@ -1,7 +1,9 @@
 import { WorkEntry } from "./WorkEntry";
-import type { WorkEntryProps } from "./WorkEntry";
+import type { WorkExperience } from "~/generated/graphql";
 
-export const Experience = ({ workEntries }: { workEntries: WorkEntryProps[] }) => {
+type Work = Pick<WorkExperience, "title" | "position" | "duration" | "description"> & { technologies?: string[] };
+
+export const Experience = ({ workEntries }: { workEntries: Work[] }) => {
     return (
         <div className="flex p-4 bg-black items-center m-12 rounded-xl opacity-90 text-primary">
             <div className="flex gap-2 flex-col">
