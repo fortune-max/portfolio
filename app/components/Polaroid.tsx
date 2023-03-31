@@ -10,6 +10,7 @@ export const Polaroid = ({ src, alt, description } : PolaroidProps) => {
             <img
                 src={src}
                 alt={alt}
+                width={"80%"}
                 className="rounded-xl h-4/5 object-cover"
             />
             <p className="font-kurale">{description}</p>
