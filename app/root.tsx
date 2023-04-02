@@ -9,6 +9,8 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import { Header } from "./components/Header";
+import { Analytics } from '@vercel/analytics/react';
+
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet }
@@ -28,6 +30,7 @@ export default function App() {
         <Links />
       </head>
       <body>
+        <Analytics />
         <Header/>
         <Outlet />
         <ScrollRestoration />
