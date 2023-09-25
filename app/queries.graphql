@@ -1,5 +1,6 @@
 query WorkExperiences {
   workExperiences {
+    jobIndex
     description
     duration
     position

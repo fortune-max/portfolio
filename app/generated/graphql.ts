@@ -3661,6 +3661,8 @@ export type WorkExperience = Node & {
   history: Array<Version>;
   /** The unique identifier */
   id: Scalars['ID'];
+  /** Newer jobs have higher values */
+  jobIndex: Scalars['Int'];
   /** Role in company */
   position: Scalars['String'];
   /** The time the document was published. Null on documents in draft stage. */
@@ -3743,6 +3745,7 @@ export type WorkExperienceCreateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']>;
   description: Scalars['String'];
   duration: Scalars['String'];
+  jobIndex: Scalars['Int'];
   position: Scalars['String'];
   technologies: Scalars['Json'];
   title: Scalars['String'];
@@ -3857,6 +3860,21 @@ export type WorkExperienceManyWhereInput = {
   id_not_starts_with?: InputMaybe<Scalars['ID']>;
   /** All values starting with the given string. */
   id_starts_with?: InputMaybe<Scalars['ID']>;
+  jobIndex?: InputMaybe<Scalars['Int']>;
+  /** All values greater than the given value. */
+  jobIndex_gt?: InputMaybe<Scalars['Int']>;
+  /** All values greater than or equal the given value. */
+  jobIndex_gte?: InputMaybe<Scalars['Int']>;
+  /** All values that are contained in given list. */
+  jobIndex_in?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  /** All values less than the given value. */
+  jobIndex_lt?: InputMaybe<Scalars['Int']>;
+  /** All values less than or equal the given value. */
+  jobIndex_lte?: InputMaybe<Scalars['Int']>;
+  /** Any other value that exists and is not equal to the given value. */
+  jobIndex_not?: InputMaybe<Scalars['Int']>;
+  /** All values that are not contained in given list. */
+  jobIndex_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
   position?: InputMaybe<Scalars['String']>;
   /** All values containing the given string. */
   position_contains?: InputMaybe<Scalars['String']>;
@@ -3950,6 +3968,8 @@ export enum WorkExperienceOrderByInput {
   DurationDesc = 'duration_DESC',
   IdAsc = 'id_ASC',
   IdDesc = 'id_DESC',
+  JobIndexAsc = 'jobIndex_ASC',
+  JobIndexDesc = 'jobIndex_DESC',
   PositionAsc = 'position_ASC',
   PositionDesc = 'position_DESC',
   PublishedAtAsc = 'publishedAt_ASC',
@@ -3963,6 +3983,7 @@ export enum WorkExperienceOrderByInput {
 export type WorkExperienceUpdateInput = {
   description?: InputMaybe<Scalars['String']>;
   duration?: InputMaybe<Scalars['String']>;
+  jobIndex?: InputMaybe<Scalars['Int']>;
   position?: InputMaybe<Scalars['String']>;
   technologies?: InputMaybe<Scalars['Json']>;
   title?: InputMaybe<Scalars['String']>;
@@ -3988,6 +4009,7 @@ export type WorkExperienceUpdateManyInlineInput = {
 export type WorkExperienceUpdateManyInput = {
   description?: InputMaybe<Scalars['String']>;
   duration?: InputMaybe<Scalars['String']>;
+  jobIndex?: InputMaybe<Scalars['Int']>;
   position?: InputMaybe<Scalars['String']>;
   technologies?: InputMaybe<Scalars['Json']>;
   title?: InputMaybe<Scalars['String']>;
@@ -4128,6 +4150,21 @@ export type WorkExperienceWhereInput = {
   id_not_starts_with?: InputMaybe<Scalars['ID']>;
   /** All values starting with the given string. */
   id_starts_with?: InputMaybe<Scalars['ID']>;
+  jobIndex?: InputMaybe<Scalars['Int']>;
+  /** All values greater than the given value. */
+  jobIndex_gt?: InputMaybe<Scalars['Int']>;
+  /** All values greater than or equal the given value. */
+  jobIndex_gte?: InputMaybe<Scalars['Int']>;
+  /** All values that are contained in given list. */
+  jobIndex_in?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  /** All values less than the given value. */
+  jobIndex_lt?: InputMaybe<Scalars['Int']>;
+  /** All values less than or equal the given value. */
+  jobIndex_lte?: InputMaybe<Scalars['Int']>;
+  /** Any other value that exists and is not equal to the given value. */
+  jobIndex_not?: InputMaybe<Scalars['Int']>;
+  /** All values that are not contained in given list. */
+  jobIndex_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
   position?: InputMaybe<Scalars['String']>;
   /** All values containing the given string. */
   position_contains?: InputMaybe<Scalars['String']>;
@@ -4320,7 +4357,7 @@ export enum _SystemDateTimeFieldVariation {
 export type WorkExperiencesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkExperiencesQuery = { workExperiences: Array<{ description: string, duration: string, position: string, technologies: any, title: string }> };
+export type WorkExperiencesQuery = { workExperiences: Array<{ jobIndex: number, description: string, duration: string, position: string, technologies: any, title: string }> };
 
 export type PhotosQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4338,6 +4375,7 @@ export type PhotosSecondQuery = { photos: Array<{ description: string, alt: stri
 export const WorkExperiencesDocument = /*#__PURE__*/ gql`
     query WorkExperiences {
   workExperiences {
+    jobIndex
     description
     duration
     position
