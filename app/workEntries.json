@@ -1,7 +1,14 @@
 [
     {
+        "title": "OneRagtime, Barcelona, Spain",
+        "duration": "Apr 2023 - Present",
+        "position": "Full-Stack Developer",
+        "description": "Maintenance and addition of features to OneRagtime's online venture capital platform for managing investments from investors and performing fundraisings for startup entrepreneurs",
+        "technologies": ["Django", "VueJS", "JavaScript", "Python", "Docker", "MySQL"]
+    },
+    {
         "title": "Harbour.Space, Barcelona, Spain",
-        "duration": "Jan 2023 - Present",
+        "duration": "Jan 2023 - Apr 2023",
         "position": "Front-End Developer",
         "description": "Maintenance and addition of features to the Student.Space Web Platform",
         "technologies": ["NextJS", "React", "TypeScript", "CSS"]
