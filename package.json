@@ -10,7 +10,9 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "cv": "node scripts/render-cv.mjs",
+    "check:content": "node scripts/check-content.mjs dist"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

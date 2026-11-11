@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MonoLabel from '../components/MonoLabel.astro';
+---
+<BaseLayout title="Not found" description="This page doesn't exist.">
+  <section class="tone-dark page">
+    <div class="wrap">
+      <MonoLabel text="404" />
+      <h1 class="display title">This page is <em>boring to run</em>, mostly because it doesn't exist.</h1>
+      <p class="mono links"><a href="/">← Home</a> <a href="/#work">Work</a> <a href="/blog">Writing</a> <a href="/contact">Say hi ↗</a></p>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .page { background: var(--bg); color: var(--fg); padding-block: clamp(3rem, 10vw, 8rem); min-height: 60vh; }
+  .title { font-size: var(--step-3); max-width: 22ch; margin: 0 0 2rem; }
+  em { font-style: normal; color: var(--accent); }
+  .links { display: flex; flex-wrap: wrap; gap: 1.5rem; letter-spacing: .08em; }
+  .links a { color: var(--accent); }
+</style>
