@@ -1,54 +1,28 @@
-# Welcome to Remix!
+# fme.dev
 
-- [Remix Docs](https://remix.run/docs)
+Personal site of Fortune Max-Eguakun: an Astro + MDX static site on Vercel. Only the contact endpoint runs on a server.
 
-## Development
-
-From your terminal:
+## Develop
 
 ```sh
-npm run dev
+npm install
+npm run dev        # http://localhost:4321
+npm test           # unit tests (Vitest)
+npm run test:e2e   # end-to-end tests (Playwright, against a production build)
+npm run build      # type-check + build
 ```
 
-This starts your app in development mode, rebuilding assets on file changes.
+## Content
 
-## Deployment
+- **Blog post:** add `src/content/blog/<slug>.mdx` with frontmatter `title`, `description`, `tldr`, `pubDate` (and `draft: true` while writing). Drafts show in dev and are hidden in production.
+- **Product page:** `src/content/work/<slug>.mdx`. `order` controls its position on the home page.
+- **CV:** `public/cv/Fortune-Max-Eguakun-CV.pdf`, rendered by `npm run cv` from the CV source HTML.
 
-First, build your app for production:
+## Environment (Vercel only, never committed)
 
-```sh
-npm run build
-```
-
-Then run the app in production mode:
-
-```sh
-npm start
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `remix build`
-
-- `build/`
-- `public/build/`
-
-### Using a Template
-
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
-
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
-# portfolio
+| Var | Purpose |
+|---|---|
+| `RESEND_API_KEY` | Sends contact-form messages |
+| `CONTACT_TO` | Where messages go |
+| `CONTACT_FROM` | Verified sender address |
+| `CONTACT_DRY_RUN` | `1` logs messages instead of sending |
