@@ -1,0 +1,31 @@
+---
+// Shared frame for inline-SVG diagrams: mono labels, currentColor strokes, accent highlights.
+interface Props { title: string; caption: string; viewBox: string }
+const { title, caption, viewBox } = Astro.props;
+const id = `d-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+---
+<figure class="diagram">
+  <svg viewBox={viewBox} role="img" aria-labelledby={id} xmlns="http://www.w3.org/2000/svg">
+    <title id={id}>{title}</title>
+    <defs>
+      <marker id={`${id}-arrow`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
+      </marker>
+    </defs>
+    <g style={`--arrow: url(#${id}-arrow)`}><slot /></g>
+  </svg>
+  <figcaption class="mono">{caption}</figcaption>
+</figure>
+<style is:global>
+  .diagram { margin: 2.5rem 0; padding: 1.5rem; border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto; }
+  .diagram svg { display: block; width: 100%; min-width: 520px; height: auto; font-family: var(--font-mono); font-size: 13px; }
+  .diagram figcaption { margin-top: 1rem; color: var(--muted); }
+  .diagram .box { fill: none; stroke: currentColor; stroke-width: 1.5; }
+  .diagram .box.hi { stroke: var(--accent); stroke-width: 2.5; }
+  .diagram .box.old { stroke-dasharray: 5 4; opacity: .7; }
+  .diagram .edge { fill: none; stroke: currentColor; stroke-width: 1.5; marker-end: var(--arrow); }
+  .diagram .edge.hi { stroke: var(--accent); }
+  .diagram text { fill: currentColor; }
+  .diagram text.hi { fill: var(--accent); }
+  .diagram text.small { font-size: 11px; opacity: .75; }
+</style>

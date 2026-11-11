@@ -1,0 +1,13 @@
+---
+import Diagram from './Diagram.astro';
+---
+<Diagram title="Strangler-fig rewrite" caption="New frontends first, then a new backend over the same tables. Each surface cut over once parity held. The old system shrank until it could be switched off." viewBox="0 0 720 300">
+  <rect class="box old" x="20" y="40" width="190" height="70" rx="8" /><text x="40" y="70">legacy API</text><text class="small" x="40" y="92">old monolith</text>
+  <rect class="box hi" x="265" y="40" width="190" height="70" rx="8" /><text class="hi" x="285" y="70">new frontends</text><text class="small" x="285" y="92">admin + investor apps</text>
+  <rect class="box hi" x="510" y="40" width="190" height="70" rx="8" /><text class="hi" x="530" y="70">new backend</text><text class="small" x="530" y="92">mapped onto old tables</text>
+  <rect class="box" x="210" y="200" width="300" height="70" rx="8" /><text x="300" y="230">shared database</text><text class="small" x="252" y="252">one source of truth throughout</text>
+  <path class="edge" d="M265 75 L215 75" /><text class="small" x="214" y="62">phase 1</text>
+  <path class="edge hi" d="M455 75 L505 75" /><text class="small" x="452" y="62">phase 2</text>
+  <path class="edge" d="M115 112 L300 196" /><path class="edge hi" d="M605 112 L420 196" />
+  <text class="small" x="540" y="150">parity harness: 99.1%</text>
+</Diagram>

@@ -1,0 +1,11 @@
+---
+import Diagram from './Diagram.astro';
+---
+<Diagram title="MCP server flow" caption="The model never touches the database. It calls a small set of read-only tools, and the server projects fields, fixes guessed names and enforces limits before anything runs." viewBox="0 0 720 220">
+  <rect class="box" x="20" y="70" width="150" height="80" rx="8" /><text x="40" y="104">LLM client</text><text class="small" x="40" y="126">business team</text>
+  <rect class="box hi" x="240" y="40" width="240" height="140" rx="8" /><text class="hi" x="260" y="70">MCP server</text>
+  <text class="small" x="260" y="96">· read-only tools</text><text class="small" x="260" y="116">· field projection</text><text class="small" x="260" y="136">· name remapping</text><text class="small" x="260" y="156">· row cap + timeout</text>
+  <rect class="box" x="550" y="70" width="150" height="80" rx="8" /><text x="570" y="104">platform API</text><text class="small" x="570" y="126">read-only query</text>
+  <path class="edge" d="M170 100 L236 100" /><path class="edge" d="M236 125 L174 125" />
+  <path class="edge hi" d="M480 100 L546 100" /><path class="edge" d="M546 125 L484 125" />
+</Diagram>
