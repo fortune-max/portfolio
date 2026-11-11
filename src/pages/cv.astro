@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MonoLabel from '../components/MonoLabel.astro';
+const pdf = '/cv/Fortune-Max-Eguakun-CV.pdf';
+---
+<BaseLayout title="CV" description="CV of Fortune Max-Eguakun, senior full-stack engineer in Barcelona: fintech platforms, LLM tooling and AI-native delivery.">
+  <section class="tone-dark page">
+    <div class="wrap">
+      <MonoLabel text="CV" />
+      <h1 class="display title">Two pages, no fluff.</h1>
+      <p class="lede">The short version of everything on this site, in a format your ATS will like.</p>
+      <p class="actions mono">
+        <a class="btn" href={pdf} download>Download CV (PDF) ↓</a>
+        <a href={pdf} target="_blank" rel="noopener">Open in a new tab ↗</a>
+      </p>
+      <object class="viewer" data={pdf} type="application/pdf" aria-label="CV preview">
+        <p>Your browser can't show PDFs inline. <a href={pdf} download>Download the CV</a> instead.</p>
+      </object>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .page { background: var(--bg); color: var(--fg); padding-block: clamp(2.5rem, 6vw, 5rem) 5rem; }
+  .title { font-size: var(--step-4); margin: 0 0 1rem; }
+  .lede { color: color-mix(in srgb, var(--fg) 85%, var(--bg)); margin: 0 0 2rem; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; margin: 0 0 2.5rem; letter-spacing: .08em; }
+  .btn { background: var(--accent); color: var(--ink); text-decoration: none; padding: .8rem 1.4rem; border-radius: 999px; font-weight: 600; }
+  .btn:hover { color: var(--ink); }
+  .viewer { width: 100%; height: min(120vh, 1100px); border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); }
+  @media (max-width: 720px) { .viewer { display: none; } }
+</style>

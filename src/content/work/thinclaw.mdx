@@ -1,0 +1,61 @@
+---
+title: ThinClaw
+order: 4
+label: ThinClaw
+headline: An assistant that does things, safely.
+summary: A multi-user agentic AI assistant you talk to over chat. It plans, uses tools, runs code in its own sandbox and works on a schedule. Built solo, in private beta.
+role: Solo founder-engineer
+period: Mar 2026 – now
+stack: [TypeScript, Node.js, SQLite, React, Docker, Linux sandboxing]
+metrics:
+  - { label: TypeScript, value: "~38k lines" }
+  - { label: test cases, value: "~840" }
+  - { label: first-party plugins, value: "19" }
+  - { label: status, value: "private beta" }
+links:
+  - { label: Public overview, href: "https://github.com/fortune-max/thinclaw-showcase" }
+---
+import AgentPrinciples from '../../components/diagrams/AgentPrinciples.astro';
+
+## The problem
+
+Chat assistants are good at talking about work and bad at doing it. The moment an assistant can actually act, by calling services, running code or working while you sleep, the interesting questions stop being about prompts. They become: whose data is this, what happens when the code loops forever, and who approved that email?
+
+I wanted an assistant that could genuinely get things done for several people at once, without any one person's tasks, secrets or mistakes ever touching anyone else's.
+
+## What I built
+
+ThinClaw is a multi-user, agentic assistant you talk to over chat. From a single message it can plan a multi-step task, use tools across connected services, write and run code in a personal workspace, and schedule work to run later. Each user has an isolated workspace, encrypted credentials and their own choice of model.
+
+It's closed source while it's in active development. This page sticks to principles rather than architecture. I'm happy to go through the details and the trade-offs in an interview.
+
+## How it works
+
+<AgentPrinciples />
+
+You send a message. The agent plans and shows live progress, and you can cancel instantly at any point. Integrations are plugins that each user switches on or off. Code runs inside the user's own sandbox. Anything sensitive or irreversible pauses and waits for an explicit yes.
+
+## The hard parts
+
+### Isolation that fails closed
+
+Running code for strangers means assuming it's hostile, or at least careless. Every user's code runs in its own sandbox with per-user resource limits, so a runaway job only ever affects its owner. If isolation isn't available, code doesn't run, and there's no "just this once" fallback. Malformed or truncated tool calls are refused, never half-executed.
+
+### Secrets that stay secret
+
+Credentials are encrypted at rest with authenticated encryption, never put into the model's conversation, and redacted from stored logs. An agent can use a key without ever seeing it.
+
+### Automation you can trust
+
+Scheduled runs execute exactly once, survive restarts and never overlap. One agent loop works across several model providers, with automatic fallback on errors and rate limits, so a provider outage doesn't silently drop your 7 a.m. task.
+
+## Numbers
+
+- About **38,000 lines** of TypeScript, **~840** test cases in 136 test files.
+- **500+ commits** since March 2026.
+- **19** first-party plugins.
+- Built and run **solo**.
+
+## Stack
+
+TypeScript and Node.js, SQLite, React for the web dashboard, Docker, and Linux sandboxing. LLM APIs from several providers. A public overview lives at [https://github.com/fortune-max/thinclaw-showcase](https://github.com/fortune-max/thinclaw-showcase).

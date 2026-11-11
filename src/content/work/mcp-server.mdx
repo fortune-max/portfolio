@@ -1,0 +1,60 @@
+---
+title: MCP server
+order: 2
+label: MCP server
+headline: A business team that asks the database instead of filing tickets.
+strike: filing tickets
+summary: An MCP server that lets LLMs query a live fintech platform safely. The whole 12-person business team uses it every day for briefings and lookups.
+role: Designed and built
+period: 2025 – 2026
+stack: [TypeScript, Express, MCP SDK, GraphQL, Docker, Railway]
+metrics:
+  - { label: daily users, value: "12" }
+  - { label: tools, value: "19, read-only" }
+  - { label: row cap, value: "5,000" }
+  - { label: statement timeout, value: "20 s" }
+---
+import McpFlow from '../../components/diagrams/McpFlow.astro';
+
+## The problem
+
+On a small team, the engineer becomes the query engine. "Which investors have we contacted about this company?", "What did this startup report last quarter?", "Who do we know at this firm?". Each question is easy, each one interrupts someone, and none of them should need an engineer.
+
+The data to answer them already existed behind an internal GraphQL API. What was missing was a safe way for non-engineers to ask in plain language. LLM assistants can now call tools through the Model Context Protocol (MCP), which looked like the right shape. Pointing a model at production data is fine as long as you assume it will be enthusiastic, confident and occasionally wrong.
+
+## What I built
+
+A small MCP server in TypeScript that exposes the platform to LLM clients through 19 read-only tools: search investors, look up a startup, list contacts at a company, pull a portfolio summary, and so on. The business team adds it to their assistant once and then just asks.
+
+I designed it around one idea: **the model should not have to be careful, because the server is**. Every safety property lives in the server, not in the prompt.
+
+## How it works
+
+<McpFlow />
+
+A question becomes one or more tool calls. Each tool is a narrow, typed operation that turns into a read-only query against the platform's API, authenticated with a short-lived service token the server refreshes itself. Results come back trimmed to what the question needs.
+
+## The hard parts
+
+### Models guess field names
+
+LLMs are great at guessing what a field *should* be called. They're less great at knowing what it *is* called. Ask for an investor's `company_name` and the model will happily request `companyName`, `company`, or `organisation`. Instead of failing the call and burning a retry, the server maps common guesses to the real fields and tells the model what it actually got. A whole class of failed calls becomes successful ones, without "let me try again" loops.
+
+### Tokens are the real budget
+
+A raw API response for "investors in this deal" can be thousands of fields the model will never read. That's money and context window wasted, and it buries the answer. Every tool supports **field projection**: the model asks for the fields it needs and gets only those. Small responses also make answers better, because there's less to misread.
+
+### Limits that hold even when the model doesn't
+
+No write tools exist, so there's nothing to misuse there. For reads, each query has a hard row cap (5,000) and a statement timeout (20 seconds), enforced server-side. A bad question returns a polite error, not a slow database. The server runs as its own service with its own credentials, so it can only see what it was built to see.
+
+## Numbers
+
+- **12** people on the business team use it, every day.
+- **19** read-only tools. No write path exists.
+- **5,000**-row cap and **20 s** statement timeout on every query.
+- Field projection means a response carries only the fields the question needs.
+
+## Stack
+
+TypeScript on Node with Express 5 and the official MCP SDK over Streamable HTTP. Queries go through the platform's GraphQL API. It's packaged with Docker and deployed on Railway next to the rest of the platform.

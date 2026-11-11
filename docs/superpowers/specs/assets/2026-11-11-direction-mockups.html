@@ -1,0 +1,86 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,900&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  .m{border-radius:8px;overflow:hidden;margin-top:12px;max-width:760px}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+  .pill{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:3px 10px;font-size:10.5px;margin:0 4px 4px 0;opacity:.8}
+  .strike{text-decoration:line-through;text-decoration-thickness:5px}
+</style>
+
+<h2>Leo's style: bold editorial type, one big statement per product</h2>
+<p class="subtitle">What I took from leo-fezard.dev: huge display type, a small monospace companion font, one accent colour, alternating dark and light sections, a strong statement for each project and the tech stack as pills. Below are three takes that are clearly <b>yours</b>, not a copy of Leo's. The copy is A's voice, rewritten for headlines.</p>
+
+<div class="options" data-multiselect>
+
+<!-- 1 -->
+<div class="option" data-choice="editorial-dark" onclick="toggleSelect(this)">
+<div class="letter">1</div>
+<div class="content" style="width:100%">
+<h3>Editorial, dark-first: slab serif and an acid-green accent</h3>
+<p>The closest to Leo's energy, with a different palette and voice. Each product gets a "before → after" headline with a strikethrough. Green suggests "systems are live and healthy".</p>
+<div class="m">
+  <div style="background:#0d0f0e;color:#f2f2ee;padding:26px 30px 30px">
+    <div class="mono" style="display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.12em;opacity:.7"><span>FORTUNE MAX-EGUAKUN</span><span>BARCELONA · SAY HI ↗</span></div>
+    <div style="font-family:Fraunces,serif;font-weight:900;font-size:46px;line-height:1.02;margin:34px 0 14px;letter-spacing:-.01em">I make messy,<br>live systems<br><span style="color:#b6f23a">boring to run.</span></div>
+    <div class="mono" style="font-size:12px;opacity:.75;max-width:430px;line-height:1.6">Senior full-stack engineer. Breaking things since 2014 and shipping them for a living since 2023. Right now I'm building the platform ~450 investors use to back startups.</div>
+  </div>
+  <div style="background:#f4f4f0;color:#0d0f0e;padding:26px 30px;display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:center">
+    <div>
+      <div class="mono" style="font-size:10.5px;letter-spacing:.12em;opacity:.6">— 01 / ONERAGTIME V2</div>
+      <div style="font-family:Fraunces,serif;font-weight:900;font-size:32px;line-height:1.05;margin:8px 0 10px">Rewrite a live platform. No <span class="strike" style="text-decoration-color:#5aa800">big bang</span>.</div>
+      <div class="mono" style="font-size:11.5px;opacity:.75;line-height:1.6">Proposed, led and built it one surface at a time. Investors never noticed, and infra got 95% cheaper.</div>
+      <div class="mono" style="margin-top:10px"><span class="pill">Django</span><span class="pill">Postgres</span><span class="pill">Nuxt</span><span class="pill">Railway</span></div>
+    </div>
+    <div class="mono" style="border:1px solid #cfcfc8;border-radius:6px;padding:14px;font-size:11px;line-height:1.9">
+      <div style="display:flex;justify-content:space-between"><span>infra cost</span><b style="color:#3c7a00">−95%</b></div>
+      <div style="display:flex;justify-content:space-between"><span>parity vs legacy</span><b>99.1%</b></div>
+      <div style="display:flex;justify-content:space-between"><span>investors</span><b>~450</b></div>
+      <div style="display:flex;justify-content:space-between"><span>tests</span><b>~4,000</b></div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 2 -->
+<div class="option" data-choice="numbers-first" onclick="toggleSelect(this)">
+<div class="letter">2</div>
+<div class="content" style="width:100%">
+<h3>Numbers as the headline: Swiss grotesk with a cobalt accent</h3>
+<p>Instead of a slogan, the biggest thing on each section is the result: <b>4h → 15m</b>, <b>−95%</b>, <b>12 people</b>. It's the most "ships real products" option, and recruiters can read it in 10 seconds.</p>
+<div class="m">
+  <div style="background:#f6f5f1;color:#111;padding:26px 30px">
+    <div style="display:flex;justify-content:space-between;font-family:'Space Grotesk';font-size:12px"><b>Fortune Max-Eguakun</b><span style="opacity:.6">Work · Writing · CV · Say hi ↗</span></div>
+    <div style="font-family:'Space Grotesk';font-weight:700;font-size:40px;line-height:1.05;margin:30px 0 12px;letter-spacing:-.03em">Senior engineer.<br>I ship things people<br>actually <span style="color:#2747ff">use</span>.</div>
+    <div style="font-family:Inter;font-size:13.5px;opacity:.75;max-width:470px;line-height:1.55">I've been breaking things since 2014 and shipping them for a living since 2023. Today that means fintech and AI products at a VC platform in Barcelona.</div>
+  </div>
+  <div style="background:#2747ff;color:#fff;padding:22px 30px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+    <div><div style="font-family:'Space Grotesk';font-weight:700;font-size:38px;letter-spacing:-.03em">4h→15m</div><div style="font-family:Inter;font-size:12px;opacity:.85">per portfolio report, with an AI pipeline that cites its sources</div></div>
+    <div><div style="font-family:'Space Grotesk';font-weight:700;font-size:38px;letter-spacing:-.03em">−95%</div><div style="font-family:Inter;font-size:12px;opacity:.85">infra cost after a rewrite I proposed, led and built</div></div>
+    <div><div style="font-family:'Space Grotesk';font-weight:700;font-size:38px;letter-spacing:-.03em">12</div><div style="font-family:Inter;font-size:12px;opacity:.85">people on the business team who query the platform through my MCP server</div></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 3 -->
+<div class="option" data-choice="warm-editorial" onclick="toggleSelect(this)">
+<div class="letter">3</div>
+<div class="content" style="width:100%">
+<h3>Warm magazine: big italic serif with a tomato accent</h3>
+<p>Calmer and more literary, closer to Henrik Karlsson or James Somers but with Leo's scale. It suits the blog best: the homepage feels like the cover of a publication you'd want to read.</p>
+<div class="m">
+  <div style="background:#f3eee4;color:#1b1a17;padding:28px 30px">
+    <div class="mono" style="display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.12em;opacity:.65"><span>FME.DEV</span><span>ISSUE 2026 · BARCELONA</span></div>
+    <div style="font-family:'Instrument Serif',serif;font-size:58px;line-height:.98;margin:26px 0 12px">Fortune <i>builds</i><br>the <i style="color:#e2492f">boring</i> parts<br>that keep money moving.</div>
+    <div style="font-family:Inter;font-size:13.5px;opacity:.75;max-width:460px;line-height:1.55">Senior full-stack engineer. Rewrites without big bangs, LLMs that cite their sources, and the occasional PS3 in a browser tab.</div>
+  </div>
+  <div style="background:#1b1a17;color:#f3eee4;padding:22px 30px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div><div class="mono" style="font-size:10px;letter-spacing:.12em;color:#e2492f">LATEST ESSAY</div><div style="font-family:'Instrument Serif';font-size:26px;line-height:1.1;margin-top:6px">Our search index had been used <i>0 times</i> in its lifetime</div></div>
+    <div><div class="mono" style="font-size:10px;letter-spacing:.12em;color:#e2492f">SHIPPED</div><div style="font-family:Inter;font-size:13px;line-height:1.8;margin-top:6px">OneRagtime v2 — rewrite, −95% infra<br>MCP server — 12 daily users<br>ThinClaw — agentic assistant, solo<br>CloudStation3 — PS3 in the browser</div></div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>

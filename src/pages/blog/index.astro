@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MonoLabel from '../../components/MonoLabel.astro';
+import { sortByDateDesc, splitArchive, visiblePosts, readingTime } from '../../lib/posts';
+
+const { current, archive } = splitArchive(sortByDateDesc(visiblePosts(await getCollection('blog'), import.meta.env.PROD)));
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+<BaseLayout title="Writing" description="Notes on rewrites, LLM tooling, compilers and the occasional hack, by Fortune Max-Eguakun.">
+  <section class="tone-dark page">
+    <div class="wrap">
+      <MonoLabel text="Writing" />
+      <h1 class="display title">Things I broke, fixed and learned.</h1>
+      <ol class="posts" data-current>
+        {current.map((p) => (
+          <li>
+            <p class="mono meta">{fmt(p.data.pubDate)} · {readingTime(p.body ?? '')} min read</p>
+            <h2 class="display t"><a href={`/blog/${p.id}`}>{p.data.title}</a></h2>
+            <p class="desc">{p.data.description}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="archive" data-archive>
+        <h2 class="mono ah">Archive (2016)</h2>
+        <p class="note">From my first blog, slaycode.wordpress.com. Teenage me, rooting phones and botting games.</p>
+        <ul class="posts small">
+          {archive.map((p) => (
+            <li><p class="mono meta">{fmt(p.data.pubDate)}</p><a class="t2" href={`/blog/${p.id}`}>{p.data.title}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .page { background: var(--bg); color: var(--fg); padding-block: clamp(2.5rem, 6vw, 5rem) 5rem; }
+  .title { font-size: var(--step-4); margin: 0 0 3rem; max-width: 16ch; }
+  .posts { list-style: none; padding: 0; margin: 0; }
+  .posts > li { padding-block: 1.5rem; border-top: 1px solid var(--rule); }
+  .meta { color: var(--muted); margin: 0 0 .4rem; }
+  .t { font-size: var(--step-2); margin: 0 0 .4rem; }
+  .t a, .t2 { text-decoration: none; }
+  .t2 { font-size: var(--step-1); }
+  .desc { margin: 0; color: color-mix(in srgb, var(--fg) 80%, var(--bg)); max-width: 60ch; }
+  .archive { margin-top: 4rem; }
+  .ah { font-size: var(--step--1); font-weight: 400; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 .5rem; }
+  .note { color: var(--muted); margin: 0 0 1rem; }
+</style>

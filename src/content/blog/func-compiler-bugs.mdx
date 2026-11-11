@@ -1,0 +1,98 @@
+---
+title: "Three FunC bug reports: a false alarm, 1,000 TON and a changed compiler default"
+description: How I reported three bugs to TON's smart-contract compiler, got one wrong, got paid for one in a day, and waited six months for the one that changed a default.
+tldr: Shrink the bug to ten commented lines and check your own toolchain first. The first report was my outdated libs, the second was a real miscompiled loop (fixed in a day, 1,000 TON), and the third helped make left-to-right argument evaluation the default in FunC 0.5.0.
+pubDate: 2026-11-11
+---
+
+Some people do crosswords. In 2022 I was doing TON smart-contract contests, which is roughly the same thing except the crossword sometimes lies to you.
+
+FunC is the language TON smart contracts are written in. It looks like C if C had been designed by someone who really loves stacks: it compiles to Fift assembly, which runs on the TON Virtual Machine (TVM), a stack machine. Your variables are names for stack slots, and the compiler's job is to shuffle those slots so that what you wrote is what runs. When the compiler gets that shuffle wrong, nothing crashes. Your variable just quietly holds the wrong value. In a smart contract, "quietly holds the wrong value" is the expensive kind of bug.
+
+Over about 15 months I sent three reports to the TON security bug bounty. One was my fault, one paid out the next day, and one took half a year. I learned something different from each.
+
+## Report 1: the bug that was me (September 2022)
+
+I was debugging a contest solution and saw values get reassigned between lines for no reason. Two variables effectively swapped places on the stack. The same thing seemed to have happened to the contest's own judge, which made me fairly sure it wasn't just me.
+
+So I did the right thing, mostly. I cut the contract down to about ten lines, commented every line with what *should* happen, and sent it to the bounty bot with my output attached.
+
+The reply came within a couple of hours: which compiler version, and which `Asm.fif`? It looked like a known issue with empty `IF` continuations, fixed back in May. My tools had been built from source in early April.
+
+`toncli update_libs`, run again: correct output. Report closed. The team signed off with:
+
+> Maybe next time we will together fix serious vulnerability.
+
+Fair. Lesson one is boring and permanent: **before you report a compiler bug, prove it on the current compiler.** I still think about this every time I'm sure the framework is wrong.
+
+## Report 2: the loop that didn't (December 2022)
+
+Three months later, during another contest, a loop stopped looping. Here's the whole proof of concept I sent, comments and all:
+
+```c
+() recv_internal() impure { }
+
+() my_fn() method_id {
+  int multiplier = 1;           ;; initialize variable
+  while (multiplier == 1) {     ;; this condition is met, but compiler thinks not
+    ~dump(999);                 ;; dump statement not executed
+    multiplier *= 2;            ;; ensure this doesn't run forever
+  }
+  ~dump(multiplier);            ;; still unchanged (multiplier still 1)
+  ;; PS: using an if instead renders the correct output
+}
+```
+
+`multiplier` starts at 1. The condition `multiplier == 1` is true. The loop body should run once, print `999`, double `multiplier` to 2, then exit. Instead the body never ran and `multiplier` was still 1 afterwards. Rewrite the same check as an `if` and the output was correct.
+
+That last line of the PoC mattered more than anything else in the report. "Here is broken code" makes a maintainer reproduce, then bisect, then guess. "Here is broken code, and here is the one-word change that makes it correct" points straight at the code path. I'd guess the compiler was folding the known starting value of `multiplier` into the loop condition and getting the `while` case wrong, while the `if` case went through a path that handled it. I never saw the fix's internals, so that part is my guess.
+
+What I do know is the timeline:
+
+- **28 Dec, 10:23**: report sent.
+- **28 Dec, 14:00**: "Hi, we are checking it".
+- **29 Dec**: "we identified the bug and fixed it (currently in testnet branch)", plus a **1,000 TON** bounty, about $2,400 at the time.
+
+A day from report to fix. I've waited longer for code review on a typo.
+
+Why did it pay? Because the failure mode is silent wrong control flow in contract code. A contract that skips a loop body can skip a balance update, a signature check or a refund, without any error to tell you it happened.
+
+## Report 3: the one that changed a default (January 2024)
+
+The last one started like the others. A small contract behaved differently from what the source said, and the difference came down to the order in which arguments were evaluated when calling an `asm` function.
+
+FunC lets you declare functions directly in assembly, and their parameters can be listed in whatever order the assembly wants them on the stack. Historically the compiler evaluated the *arguments* in that stack order, not in the left-to-right order you wrote them. Usually you can't tell. But when arguments have side effects, like reading from the same slice twice, the order is the whole program:
+
+```c
+;; illustrative, not my original PoC
+(int, int) read_pair(slice cs) {
+  ;; reads two 8-bit fields, in order... or does it?
+  return pack(cs~load_uint(8), cs~load_uint(8));
+}
+```
+
+If `pack` is an `asm` function whose stack order is reversed, the two reads can happen in the opposite order, and your fields come back swapped. There was an opt-in fix, `#pragma compute-asm-ltr`, which forces left-to-right evaluation. But it was opt-in, and you only opt in to things you know about.
+
+This time there was no reply the next day. Preliminary confirmation came after three weeks. Then "we need more time", then "can not give you estimate yet. We are preparing big funC update that will handle this bug as well". I followed up politely, roughly once a month.
+
+Nearly six months in, the answer came, and it was more interesting than a yes or no. The issue **was already known** inside the team, and so was the fix. They had judged that it didn't break things badly enough to change. My report showed a case where it changed behaviour "drastically and in unexpected way", and that tipped it: `compute-asm-ltr` (among other changes) became **the default in FunC 0.5.0**. The bounty was 250 TON, adjusted for the TON price at report time, which I'd asked about. It's a small number next to report 2, but I'm prouder of this one. Everyone who writes FunC now gets the safer behaviour without knowing my report existed. That's the best kind of fix.
+
+## What made the good reports good
+
+Looking back, the reports that landed had the same shape:
+
+1. **A minimal repro.** About ten lines, the smallest program that still misbehaves. If you can't shrink it, you don't understand it yet.
+2. **Expected vs actual, in comments.** Each line says what should happen. The maintainer shouldn't have to work out your intent.
+3. **The contrast case.** "`if` works, `while` doesn't" halves the search space for whoever fixes it.
+4. **Severity in their terms.** Not "this is bad" but "this silently changes control flow in contract code."
+5. **Polite persistence.** Report 3 needed five months of follow-ups. Each one was short, specific and friendly, because the people on the other end were busy, not hostile.
+
+## What I'd do differently
+
+**Check the toolchain first, every time.** Report 1 cost the team an hour of their attention and me some pride. A two-line "here's my compiler version and `Asm.fif` hash" at the top of every report would have caught it before I hit send.
+
+**Write the severity argument up front.** For report 3, I described the behaviour and left the impact implied. The team already knew the behaviour existed. What they didn't have was a convincing case that it mattered. If I'd led with "here is a realistic contract whose fields silently swap", I suspect the six months would have been shorter.
+
+**Turn reports into tests.** Each PoC was already a perfect regression test: tiny, deterministic and commented. I should have offered them as test cases to the compiler repo, not just as attachments to a chat bot. A test lasts longer than a bug report.
+
+And the general lesson, which I now apply to Django, Postgres and LLM SDKs as much as to FunC: when the tool seems wrong, assume it's you, prove that it isn't, then make the proof as small and kind as you can.

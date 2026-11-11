@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Band from '../components/Band.astro';
+import MonoLabel from '../components/MonoLabel.astro';
+import ProductSection from '../components/ProductSection.astro';
+import WritingList from '../components/WritingList.astro';
+import Awards from '../components/Awards.astro';
+import MoreRow from '../components/MoreRow.astro';
+import { sortByDateDesc, splitArchive, visiblePosts } from '../lib/posts';
+
+const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const posts = sortByDateDesc(splitArchive(visiblePosts(await getCollection('blog'), import.meta.env.PROD)).current);
+// Products alternate light/dark after the dark hero; the section after them continues the pattern.
+const toneAt = (i: number): 'dark' | 'light' => (i % 2 === 0 ? 'light' : 'dark');
+const afterTone = toneAt(work.length);
+const nextTone = (t: 'dark' | 'light') => (t === 'dark' ? 'light' : 'dark');
+---
+<BaseLayout title="Fortune Max-Eguakun · Senior full-stack engineer" description="Senior full-stack engineer in Barcelona. I make messy, live systems boring to run: fintech platforms, LLM tooling and the occasional PS3 in a browser tab.">
+  <Hero />
+  <div id="work">
+    {work.map((entry, i) => <ProductSection entry={entry} index={i + 1} tone={toneAt(i)} />)}
+  </div>
+  {posts.length > 0 && (
+    <Band tone={afterTone} id="writing">
+      <div class="wrap">
+        <MonoLabel text="Writing" />
+        <WritingList posts={posts} />
+        <p class="mono all"><a href="/blog">All writing →</a></p>
+      </div>
+    </Band>
+  )}
+  <Band tone={posts.length > 0 ? nextTone(afterTone) : afterTone} id="side-quests">
+    <div class="wrap">
+      <MonoLabel text="Side quests" />
+      <h2 class="display h">Compilers, contests and the odd bounty.</h2>
+      <Awards />
+      <h3 class="mono sub">ALSO SHIPPED</h3>
+      <MoreRow />
+    </div>
+  </Band>
+</BaseLayout>
+<style>
+  .h { font-size: var(--step-3); margin: 0 0 2rem; max-width: 18ch; }
+  .sub { margin: 3rem 0 1rem; color: var(--muted); letter-spacing: .12em; font-weight: 400; }
+  .all { margin: 2rem 0 0; } .all a { color: var(--accent); }
+</style>

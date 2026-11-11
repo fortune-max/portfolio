@@ -1,0 +1,8 @@
+---
+interface Props { text: string }
+---
+<li class="mono pill">{Astro.props.text}</li>
+<style>
+  .pill { list-style: none; display: inline-block; border: 1px solid currentColor; border-radius: 999px;
+          padding: .2rem .7rem; font-size: .75rem; opacity: .85; }
+</style>

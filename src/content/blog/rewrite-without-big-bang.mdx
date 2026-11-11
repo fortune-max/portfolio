@@ -1,0 +1,100 @@
+---
+title: Rewriting a live fintech platform without a big-bang release
+description: The strangler-fig playbook I used to replace a seven-year-old VC platform one surface at a time, with one database, a parity harness and no launch weekend.
+tldr: Don't build the new system next to the old one. Build it on top of the same database, prove it gives the same numbers, and move users over one surface at a time. The old system never has a "last day". It just stops getting traffic.
+pubDate: 2026-11-04
+---
+
+Every engineer has a rewrite fantasy. Mine came true, which is how I found out the fantasy part is the launch weekend, and the fix is to not have one.
+
+Between late 2025 and autumn 2026 I proposed, led and built most of a rewrite of a live venture-capital platform: the system investors use to back startups and the back office uses to run funds, signatures, valuations and quarterly reporting. Real money, real investors, and a seven-year-old Django monolith that had earned its retirement.
+
+This is the playbook, roughly in the order it happened.
+
+## Rule zero: there is only one database
+
+The classic rewrite builds a new system with a new database, then spends months on a migration and a sync job, and then has a launch weekend where everyone prays the two agree. I skipped all of that by refusing to have two databases.
+
+The new backend was a fresh Django project pointed at **the same tables** as the legacy app. Django makes this easy, because a model can describe a table without owning it:
+
+```python
+class Investment(models.Model):
+    investor = models.ForeignKey("people.Investor", on_delete=models.PROTECT, db_column="investor_id")
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    signed_at = models.DateTimeField(null=True)
+
+    class Meta:
+        managed = False          # Django won't create, alter or drop this table
+        db_table = "core_investment"
+```
+
+`managed = False` is the whole trick. The legacy app keeps owning the schema, and the new code just reads and writes the same rows. No sync, no dual writes, no "which one is right?". Both apps are views over one source of truth.
+
+The cost is that you inherit the old schema's quirks. The skill is wrapping them instead of spreading them: clean model names and clean APIs on top, and the old column names kept in `db_column` where nobody has to look at them.
+
+## Phase 1: new frontends on the old API
+
+The first thing users saw wasn't a new backend. It was a new admin app and a new investor app, both talking to the **legacy API**.
+
+That sounds backwards, but it bought three things:
+
+1. Users got a better UI months earlier.
+2. I learned every screen's real requirements by rebuilding it, instead of guessing from a spec.
+3. When the new backend arrived, the frontends were already proven. I only had to swap the base URL.
+
+## Phase 2: a new backend over the old tables
+
+With the frontends in place, I built the new backend underneath them. It had the same tables, a modern stack and a much smaller surface. Over the year the schema went from 154 tables to 101, and some ugly corners got proper models. A single relationship model replaced four overlapping legacy tables, for example. But every change was a migration on the shared database that the legacy app could survive. Old and new had to work at the same time, all the time.
+
+## Phase 3: prove the numbers before anyone switches
+
+In fintech, "it looks right" isn't a standard. Before any surface moved, a parity harness computed the same things through both systems and diffed them: portfolio KPIs, valuations and investor positions.
+
+```python
+def check_parity(metric: str, ids: list[int]) -> list[Mismatch]:
+    mismatches = []
+    for pk in ids:
+        old = legacy_client.get_metric(metric, pk)   # legacy API
+        new = compute_metric(metric, pk)              # new backend, same DB
+        if not close_enough(old, new):
+            mismatches.append(Mismatch(metric, pk, old, new))
+    return mismatches
+```
+
+It sounds trivial, and the value was in running it relentlessly. We got to 111 of 112 KPIs identical, and the last one was an intentional change, written down and agreed before cutover. Agreeing on "intentional" before launch is the difference between a known change and a support ticket.
+
+## Phase 4: cut over one surface at a time
+
+Cutover was a series of small, boring days, not one big one. The admin app moved first, because its users were the internal team and could tell me within minutes if something was off. The investor app followed about a week and a half later. Each cutover was mostly a configuration change: point the frontend at the new API. Rolling back would have meant pointing it back.
+
+Two details made it invisible to users:
+
+- **Carry the password hashes over as-is.** Django's hashers already understood them, so nobody had to reset a password.
+- **Plan the one re-login.** Moving to a new token format meant one forced sign-in. We said so up front, and it was the only thing users noticed.
+
+## Phase 5: move, then switch off
+
+Only after both surfaces were live on the new backend did I touch infrastructure. MySQL to Postgres was its own project, deliberately kept apart from every refactor. It was an idempotent migration script, rehearsed on snapshots until it was dull, then run once. Then the old cloud setup was torn down, at roughly 95% lower infra cost.
+
+Notice what's *not* in that sentence: a launch. The legacy app didn't have a last day. It had a last request, and then nobody noticed it was gone.
+
+## How a small team went this fast
+
+Most of this was built by one or two engineers in about a year, with coding agents doing a lot of the typing. That only works with guardrails:
+
+- **Specs and plans before code.** Every non-trivial change started as a written spec, then a step-by-step plan, and only then implementation.
+- **Tests as the contract.** About 4,000 automated tests by the end, running on every pull request.
+- **Preview environments per pull request,** seeded from a production snapshot, so a reviewer clicks a link and tries the real thing.
+- **An automated review gate,** so nothing merged without a second pair of eyes, even when the second pair was a model.
+
+Agents make writing code cheap. They don't make *knowing what to build* cheap, and the strangler pattern is what kept the second problem small.
+
+## What I'd do differently
+
+**Build the parity harness first.** I built it when the first backend endpoints were ready. If I'd built it on day one, against the legacy API alone, it would have doubled as documentation of what "correct" meant, and caught a few surprises earlier.
+
+**Write the cutover runbook as code.** The cutovers were calm, but the checklist lived in a document. Next time each step would be a script with a dry-run mode, so the rehearsal and the real thing are literally the same command.
+
+**Put more effort into the schema's names earlier.** Wrapping legacy names with clean models works, but every wrapper is a small translation layer someone has to learn. Where a rename was cheap, I should have just done it in the shared database sooner, while both apps were still being changed anyway.
+
+The headline lesson fits in one line: a rewrite is not a project with a launch. It's a migration with a lot of small, reversible steps, and the best compliment is when nobody can say when it happened.
