@@ -25,5 +25,11 @@
   --max: 72rem;
 }
 
+/* --muted and --rule are re-declared per tone: custom properties resolve where they're declared,
+   so a :root-only definition would leak dark-band greys into light bands. */
+.tone-dark, .tone-light {
+  --muted: color-mix(in srgb, var(--fg) 68%, var(--bg));
+  --rule: color-mix(in srgb, var(--fg) 18%, var(--bg));
+}
 .tone-dark { --bg: var(--ink); --fg: var(--paper); --accent: var(--accent-dark); }
 .tone-light { --bg: var(--paper); --fg: var(--ink); --accent: var(--accent-light); }

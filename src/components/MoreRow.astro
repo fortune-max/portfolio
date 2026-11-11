@@ -1,0 +1,12 @@
+---
+import { more } from '../data/more';
+---
+<ul class="more" data-more>
+  {more.map((m) => <li class="lift"><strong>{m.title}</strong><p>{m.detail}</p></li>)}
+</ul>
+<style>
+  .more { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  @media (max-width: 820px) { .more { grid-template-columns: minmax(0, 1fr); } }
+  li { border: 1px solid var(--rule); border-radius: 8px; padding: 1.25rem; }
+  p { margin: .5rem 0 0; font-size: .95rem; color: color-mix(in srgb, var(--fg) 78%, var(--bg)); }
+</style>

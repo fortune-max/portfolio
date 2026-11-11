@@ -1,0 +1,15 @@
+---
+import { awards } from '../data/awards';
+---
+<ul class="awards" data-awards>
+  {awards.map((a) => (
+    <li><span class="mono date">{a.date}</span><span><strong>{a.title}</strong><br /><span class="d">{a.detail}</span></span></li>
+  ))}
+</ul>
+<style>
+  .awards { list-style: none; padding: 0; margin: 0; }
+  li { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; padding-block: 1rem; border-top: 1px solid var(--rule); }
+  @media (max-width: 520px) { li { grid-template-columns: minmax(0, 1fr); gap: .25rem; } }
+  .date { color: var(--accent); padding-top: .2rem; }
+  .d { color: color-mix(in srgb, var(--fg) 78%, var(--bg)); }
+</style>
