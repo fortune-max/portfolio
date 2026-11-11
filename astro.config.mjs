@@ -12,5 +12,6 @@ export default defineConfig({
   site: 'https://fme.dev',
   trailingSlash: 'never',
   integrations: [mdx(), sitemap()],
+  markdown: { shikiConfig: { theme: 'vitesse-dark' } },
   adapter: e2e ? node({ mode: 'standalone' }) : vercel(),
 });

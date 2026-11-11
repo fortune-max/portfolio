@@ -1,0 +1,29 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import ProseLayout from '../../layouts/ProseLayout.astro';
+import { visiblePosts, readingTime } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = visiblePosts(await getCollection('blog'), import.meta.env.PROD);
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props { entry: CollectionEntry<'blog'> }
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const date = d.pubDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+<ProseLayout title={d.title} description={d.description} label={d.archive ? 'Archive · 2016' : 'Writing'} meta={`${date} · ${readingTime(entry.body ?? '')} min read`}>
+  <a slot="back" class="mono back" href="/blog">← All writing</a>
+  {!d.archive && <p class="tldr" data-tldr><span class="mono">TL;DR</span> {d.tldr}</p>}
+  <Content />
+  <nav slot="footer" class="mono pager"><a href="/blog">← All writing</a><a href="/contact">Say hi ↗</a></nav>
+</ProseLayout>
+<style>
+  .back { display: inline-block; margin-bottom: 2rem; color: var(--muted); text-decoration: none; letter-spacing: .08em; }
+  .tldr { border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 6px; padding: 1rem 1.25rem; margin: 0 0 2.5rem; }
+  .tldr .mono { color: var(--accent); margin-right: .5rem; }
+  .pager { display: flex; justify-content: space-between; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
+  .pager a { color: var(--accent); }
+</style>
