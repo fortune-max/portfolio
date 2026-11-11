@@ -43,3 +43,19 @@ describe('createRateLimiter', () => {
     expect(allow('1.2.3.4', 1000 + 600_001)).toBe(true);
   });
 });
+
+describe('sendContact without an API key', () => {
+  const input = { name: 'Ada', email: 'ada@example.com', message: 'Hello there, nice site!' };
+  it('throws in production instead of silently dropping the message', async () => {
+    const { sendContact } = await import('../../src/lib/contact');
+    await expect(sendContact(input, { VERCEL_ENV: 'production' })).rejects.toThrow();
+  });
+  it('is a dry run outside production', async () => {
+    const { sendContact } = await import('../../src/lib/contact');
+    await expect(sendContact(input, { VERCEL_ENV: 'preview' })).resolves.toBeUndefined();
+  });
+  it('honours CONTACT_DRY_RUN=1 anywhere', async () => {
+    const { sendContact } = await import('../../src/lib/contact');
+    await expect(sendContact(input, { VERCEL_ENV: 'production', CONTACT_DRY_RUN: '1' })).resolves.toBeUndefined();
+  });
+});

@@ -44,14 +44,15 @@ export function createRateLimiter(limit: number, windowMs: number) {
   };
 }
 
-type Env = { RESEND_API_KEY?: string; CONTACT_TO?: string; CONTACT_FROM?: string; CONTACT_DRY_RUN?: string };
+type Env = { RESEND_API_KEY?: string; CONTACT_TO?: string; CONTACT_FROM?: string; CONTACT_DRY_RUN?: string; VERCEL_ENV?: string };
 
 export async function sendContact(input: ContactInput, env: Env): Promise<void> {
-  if (env.CONTACT_DRY_RUN === '1' || !env.RESEND_API_KEY) {
+  // A missing key is only a dry run outside production; in production it must fail loudly, never drop mail.
+  if (env.CONTACT_DRY_RUN === '1' || (!env.RESEND_API_KEY && env.VERCEL_ENV !== 'production')) {
     console.info('[contact] dry run: message from', input.name.slice(0, 40));
     return;
   }
-  if (!env.CONTACT_TO || !env.CONTACT_FROM) throw new Error('contact env not configured');
+  if (!env.RESEND_API_KEY || !env.CONTACT_TO || !env.CONTACT_FROM) throw new Error('contact env not configured');
   const { error } = await new Resend(env.RESEND_API_KEY).emails.send({
     from: env.CONTACT_FROM,
     to: env.CONTACT_TO,

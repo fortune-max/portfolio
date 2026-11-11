@@ -3,6 +3,7 @@
 // Usage: node scripts/check-content.mjs dist   (env DENYLIST_FILE, default ../blog/denylist.txt)
 // The private denylist lives outside this public repo; hits are reported as file:line only.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -37,11 +38,21 @@ export function findHits(text, patterns) {
   return hits;
 }
 
+/** Text of a PDF via poppler's pdftotext (brew install poppler). Returns null if pdftotext is unavailable. */
+export function pdfText(file) {
+  try {
+    return execFileSync('pdftotext', ['-layout', file, '-'], { encoding: 'utf8' });
+  } catch (e) {
+    if (e.code === 'ENOENT') return null;
+    throw e;
+  }
+}
+
 function* walk(dir) {
   for (const f of readdirSync(dir)) {
     const p = path.join(dir, f);
     if (statSync(p).isDirectory()) yield* walk(p);
-    else if (/\.(html|xml)$/.test(f)) yield p;
+    else if (/\.(html|xml|pdf)$/.test(f)) yield p;
   }
 }
 
@@ -53,7 +64,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
   else console.warn('check-content: no denylist file found; running generic patterns only');
   let total = 0;
   for (const file of walk(dir)) {
-    for (const h of findHits(readFileSync(file, 'utf8'), patterns)) {
+    const text = file.endsWith('.pdf') ? pdfText(file) : readFileSync(file, 'utf8');
+    if (text === null) { console.warn(`check-content: pdftotext missing, could not scan ${path.relative(dir, file)}`); total++; continue; }
+    for (const h of findHits(text, patterns)) {
       console.log(`${path.relative(dir, file)}:${h.line} ${h.id}`);
       total++;
     }

@@ -19,7 +19,7 @@ const error = Astro.url.searchParams.get('error') === '1';
         {error && <span class="err">That didn't go through. Please check the fields and try again.</span>}
       </p>
 
-      <form method="post" action="/api/contact" class="form" data-contact novalidate>
+      <form method="post" action="/api/contact" class="form" data-contact>
         <label>Name<input name="name" required maxlength="100" autocomplete="name" /></label>
         <span class="mono field-err" data-err="name"></span>
         <label>Email<input name="email" type="email" required maxlength="254" autocomplete="email" /></label>
@@ -36,6 +36,7 @@ const error = Astro.url.searchParams.get('error') === '1';
 
 <script>
   const form = document.querySelector<HTMLFormElement>('[data-contact]');
+  if (form) form.noValidate = true; // with JS we show our own inline errors; without JS the browser validates
   const status = document.querySelector<HTMLElement>('[data-status]');
   const show = (cls: 'ok' | 'err', text: string) => {
     const span = document.createElement('span');

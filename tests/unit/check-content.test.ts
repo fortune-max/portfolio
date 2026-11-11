@@ -22,3 +22,11 @@ describe('content guard', () => {
     expect(JSON.stringify(hit)).not.toMatch(/leo/i);
   });
 });
+
+describe('content guard covers PDFs', () => {
+  it('extracts text from the public CV so it can be scanned', async () => {
+    const { pdfText } = await import('../../scripts/check-content.mjs');
+    const text = pdfText('public/cv/Fortune-Max-Eguakun-CV.pdf');
+    expect(text).toMatch(/Fortune Max-Eguakun/);
+  });
+});

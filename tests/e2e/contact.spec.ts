@@ -69,3 +69,16 @@ test('contact page source contains no email address', async ({ request }) => {
   const html = await (await request.get('/contact')).text();
   expect(html).not.toMatch(/[\w.+-]+@[\w-]+\.[a-z]{2,}/i);
 });
+
+test.describe('without JavaScript, invalid input', () => {
+  test.use({ javaScriptEnabled: false });
+  test('native validation blocks submit and keeps what was typed', async ({ page }) => {
+    await page.goto('/contact');
+    await page.fill('input[name=name]', 'Ada');
+    await page.fill('input[name=email]', 'ada@example.com');
+    await page.fill('textarea[name=message]', 'too short');
+    await page.click('button[type=submit]');
+    await expect(page).toHaveURL(/\/contact$/);
+    await expect(page.locator('textarea[name=message]')).toHaveValue('too short');
+  });
+});
