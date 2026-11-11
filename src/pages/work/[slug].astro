@@ -1,0 +1,48 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import ProseLayout from '../../layouts/ProseLayout.astro';
+import Headline from '../../components/Headline.astro';
+import MetricsCard from '../../components/MetricsCard.astro';
+import Pill from '../../components/Pill.astro';
+
+export async function getStaticPaths() {
+  const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+  return work.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: { entry, prev: work[i - 1] ?? null, next: work[i + 1] ?? null },
+  }));
+}
+
+interface Props { entry: CollectionEntry<'work'>; prev: CollectionEntry<'work'> | null; next: CollectionEntry<'work'> | null }
+const { entry, prev, next } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+---
+<ProseLayout title={d.title} description={d.summary} label={`${String(d.order).padStart(2, '0')} / Work`} meta={`${d.role} · ${d.period}`}>
+  <a slot="back" class="mono back" href="/#work">← All work</a>
+  <p slot="header" class="display headline"><Headline text={d.headline} strike={d.strike} /></p>
+  <Content />
+  <aside slot="aside" class="aside">
+    <MetricsCard metrics={d.metrics} />
+    <ul class="pills">{d.stack.map((s) => <Pill text={s} />)}</ul>
+    {d.links && (
+      <ul class="mono links">{d.links.map((l) => <li><a href={l.href} rel="noopener">{l.label} ↗</a></li>)}</ul>
+    )}
+  </aside>
+  <nav slot="footer" class="mono pager" aria-label="More work">
+    {prev ? <a href={`/work/${prev.id}`}>← {prev.data.title}</a> : <span />}
+    {next ? <a href={`/work/${next.id}`}>{next.data.title} →</a> : <a href="/#work">All work →</a>}
+  </nav>
+</ProseLayout>
+<style>
+  .back { display: inline-block; margin-bottom: 2rem; color: var(--muted); text-decoration: none; letter-spacing: .08em; }
+  .back:hover { color: var(--accent); }
+  .headline { font-size: var(--step-2); color: color-mix(in srgb, var(--fg) 85%, var(--bg)); margin: 0; max-width: 28ch; }
+  .aside { position: sticky; top: 1.5rem; display: grid; gap: 1.25rem; }
+  .pills { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0; margin: 0; }
+  .links { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+  .links a { color: var(--accent); }
+  .pager { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--rule); letter-spacing: .06em; }
+  .pager a { color: var(--accent); }
+  @media (max-width: 960px) { .aside { position: static; } }
+</style>
