@@ -1,0 +1,96 @@
+---
+title: Designing an MCP server that LLMs don't misuse
+description: What I learned putting a live fintech database behind an MCP server for a 12-person business team, and why every safety property lives in the server rather than the prompt.
+tldr: Assume the model is eager, confident and sometimes wrong. Give it narrow read-only tools, let it ask for only the fields it needs, quietly fix its guesses at field names, and enforce row caps and timeouts on the server, where no prompt can talk its way past them.
+pubDate: 2026-10-28
+---
+
+The most common request I got as an engineer on a small fintech team wasn't a feature. It was a question. "Which investors have we talked to about this company?" "What did this startup report last quarter?" "Who do we know at that fund?" Each takes thirty seconds to answer and five minutes to context-switch into.
+
+So I built an MCP server and gave the questions to a model instead. The whole business team, about twelve people, now asks their assistant directly, every day. Here's what it took to make that safe enough to sleep through.
+
+## The one design rule
+
+MCP (the Model Context Protocol) lets an LLM client call tools you define. The tempting version is a single tool, `run_query(sql)`, and a stern system prompt. Please don't.
+
+My rule was: **the model should not have to be careful, because the server is.** A prompt is a suggestion that a confident model will eventually reinterpret. A server-side check is a fact. Every property I cared about lives in code the model can't argue with.
+
+## Narrow tools, all read-only
+
+Instead of one powerful tool, the server exposes 19 small ones: `search_investors`, `get_startup`, `list_contacts_at_company`, `portfolio_summary`, and so on. Each has a typed input schema and does exactly one thing.
+
+```ts
+server.registerTool(
+  "search_investors",
+  {
+    description: "Find investors by name, company or tag. Read-only.",
+    inputSchema: {
+      query: z.string().min(2),
+      fields: z.array(z.string()).optional(), // projection, see below
+      limit: z.number().int().max(200).default(25),
+    },
+  },
+  async ({ query, fields, limit }) => runReadOnly("investors", { query, fields, limit }),
+);
+```
+
+Narrow tools help in two ways. First, there is no write path at all, so there's nothing to misuse. The worst outcome of a bad tool call is a wrong answer, which a human reads before acting on. Second, models pick tools better when the menu is specific. "Search investors" is much harder to misapply than "run SQL".
+
+## Field projection: tokens are the real budget
+
+A raw API record for an investor can have dozens of fields: addresses, flags, timestamps and nested relations. Return twenty of those for "who are our investors in fintech?" and you've spent a chunk of the context window on data the model will never read, and buried the answer in noise.
+
+Every tool takes an optional `fields` list, and the server returns only those:
+
+```ts
+function project<T extends Record<string, unknown>>(rows: T[], fields?: string[]) {
+  if (!fields?.length) return rows.map(defaultView);       // a small, sensible default
+  return rows.map((r) => Object.fromEntries(fields.filter((f) => f in r).map((f) => [f, r[f]])));
+}
+```
+
+Smaller responses are cheaper, but the surprising part was that they're also *better*. With less in the context, the model misreads less. The default view matters too: when the model doesn't ask for fields, it gets a curated handful, not everything.
+
+## Fix the guesses, don't punish them
+
+Models are very good at guessing what a field *should* be called and quite bad at knowing what it *is* called. Ask about "company" and you'll see requests for `companyName`, `company`, `organisation` and `org_name` in the same afternoon.
+
+The naive server rejects the call. The model apologises, retries with another guess, and burns three round-trips and a lot of patience. Instead, the server keeps a small synonym map per resource and remaps known guesses, then tells the model what it actually returned:
+
+```ts
+const SYNONYMS: Record<string, string> = {
+  companyName: "company", organisation: "company", org_name: "company",
+  email_address: "email", fullName: "name",
+};
+
+function normalizeFields(fields: string[], allowed: Set<string>) {
+  const mapped = fields.map((f) => SYNONYMS[f] ?? f);
+  return { ok: mapped.filter((f) => allowed.has(f)), unknown: mapped.filter((f) => !allowed.has(f)) };
+}
+```
+
+Unknown fields aren't an error either. The response includes a short note listing the fields that *do* exist. That one change turned a whole category of failed calls into successful ones.
+
+## Limits the model can't talk its way past
+
+Read-only isn't the same as harmless. A badly scoped question can still ask the database for everything. So every query, whatever tool it came through, runs inside the same guardrails:
+
+- a **hard row cap** of 5,000,
+- a **statement timeout** of 20 seconds,
+- its **own service identity**, with a short-lived token the server refreshes itself, so it can only see what it was built to see.
+
+When a limit trips, the model gets a clear, polite error ("too many rows, add a filter") instead of a hung request. Models handle that well: they narrow the question and try again, which is exactly what a person would do.
+
+## What the team actually does with it
+
+The common uses turned out to be very human: briefing notes before an investor meeting, "have we contacted anyone at this company?", the details of a startup ahead of a call, the people we know at a given firm. Nothing exotic. Just the questions that used to come to me, answered without me.
+
+## What I'd do differently
+
+**Log questions, not just tool calls.** I logged which tools ran and how long they took. What I really wanted later was the *questions* people asked, so I could see which tools were missing. The best roadmap for a tool like this is the questions it fails to answer.
+
+**Grow the synonym map from data.** I built the first version by hand from what I saw in testing. A weekly job listing every unknown field name the model requested would have kept it current with no effort.
+
+**Ship evals with the tools.** A small suite of real questions with expected tool calls and answers would have made it much easier to change tool descriptions without worrying. Right now that confidence comes from usage, which is a slower feedback loop than a test.
+
+The general lesson goes well beyond MCP: when you put a model in front of real systems, write the safety in the same place you'd write it for any new, enthusiastic teammate with production access, which is the code, not the instructions.
