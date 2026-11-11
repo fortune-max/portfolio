@@ -1,0 +1,9 @@
+---
+interface Props { index?: number; text: string }
+const { index, text } = Astro.props;
+const prefix = index === undefined ? '—' : `— ${String(index).padStart(2, '0')} /`;
+---
+<p class="mono label">{prefix} {text.toUpperCase()}</p>
+<style>
+  .label { margin: 0 0 .75rem; color: var(--muted); letter-spacing: .12em; }
+</style>

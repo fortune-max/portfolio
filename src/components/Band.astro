@@ -1,0 +1,8 @@
+---
+interface Props { tone: 'dark' | 'light'; id?: string; class?: string; [key: string]: unknown }
+const { tone, id, class: cls = '', ...rest } = Astro.props;
+---
+<section id={id} class={`band tone-${tone} ${cls}`} {...rest}><slot /></section>
+<style>
+  .band { background: var(--bg); color: var(--fg); padding-block: clamp(3rem, 8vw, 6rem); }
+</style>
