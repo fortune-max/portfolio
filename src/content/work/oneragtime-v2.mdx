@@ -10,9 +10,9 @@ period: Nov 2025 – Oct 2026
 stack: [Django, PostgreSQL, Vue 3, Vite, Celery, Railway, Vercel]
 metrics:
   - { label: infra cost, value: "−95%" }
-  - { label: KPI parity vs legacy, value: "111 / 112" }
+  - { label: tables, value: "154 → 101" }
   - { label: active investors, value: "~450" }
-  - { label: automated tests, value: "~4,000" }
+  - { label: portfolio revaluation, value: "minutes → ~7 s" }
 ---
 import StranglerFig from '../../components/diagrams/StranglerFig.astro';
 
@@ -20,9 +20,9 @@ import StranglerFig from '../../components/diagrams/StranglerFig.astro';
 
 OneRagtime is a venture platform. Investors put money into startups through funds and single-deal vehicles, and a back office runs the rest: onboarding, compliance checks, signatures, valuations, quarterly reports. About €97M has gone through it since 2018.
 
-When I joined as an intern in 2023, the back office had grown over years, with many people's ideas of how things should work layered on top of each other. It ran, but every change took longer than it should, and it was due an overhaul.
+When I joined as an intern in April 2023 there were six engineers and a designer. The back office had grown over years, with many people's ideas of how things should work layered on top of each other. It ran, but every change took longer than it should, and it was due an overhaul.
 
-By late 2025 I'd been one of two engineers for a while, and I made the case for a rewrite. I wrote the plan, led it, and wrote most of the code: the new UI, the new schema and backend, the data migration, and the hosting move. My colleague built features on top as we went. Since September 2026 I've been the only engineer, and I'm now onboarding the next one.
+Over the next two years people left one at a time and weren't replaced. By mid-2025 we were two engineers, and in practice I was doing the tech lead's job, without the title. In late 2025 I made the case for a rewrite. I wrote the plan, led it, and wrote most of the code: the new UI, the new schema and backend, the data migration, and the hosting move. My colleague built features on top as we went. Since September 2026 I've been the only engineer, and I'm now onboarding the next one.
 
 ## How we did it without a launch day
 
@@ -44,19 +44,21 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 **The schema.** Working out which of 154 tables were still the source of truth for something took most of the thinking. By the end there were 101 tables, and 14 migration files instead of 44.
 
-**Agreeing on what "the same numbers" means.** The harness got to 111 of 112 KPIs matching. The last one was a change we made on purpose and wrote down before switching. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
+**Agreeing on what "the same numbers" means.** Before each part moved over, a script ran the same portfolio calculations through the old and new systems and listed every difference, and we went through them until none were left that we hadn't chosen on purpose. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
 
 **The database move.** Going from MySQL to Postgres at the same time meant the ETL script had to be safe to run again and again. I practised it on copies of production until it was dull, and then ran it for real once.
 
-**Keeping agents honest.** To trust that much agent-written code there were written specs before code, around 4,000 tests running on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
+**Background work.** A lot of the platform happens outside a request: CRM and mailing-list syncs, daily emails, Slack alerts, document indexing, scheduled checks. That's about 70 Celery tasks on Redis. Two rules saved us the most trouble. Tasks are queued only after the database transaction commits, so a worker never looks for a row that doesn't exist yet. And anything that runs less often than hourly has to be a clock-time schedule, because a plain interval restarts its countdown every time the service redeploys, and some jobs would otherwise never run. A startup check refuses a schedule that breaks that rule.
+
+**Keeping agents honest.** To trust that much agent-written code there were written specs before code, tests on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
 
 ## Numbers
 
 - Hosting costs down about **95%** after the old AWS setup was switched off.
-- **111 of 112** KPIs identical before the switch. The other one was intentional.
 - About **450** active investors moved over. They had to log in again once.
-- About **4,000** tests, and portfolio revaluation in seconds instead of minutes.
+- **154 → 101** tables.
+- Portfolio revaluation in about **7 seconds** instead of minutes per startup.
 
 ## Stack
 
-Django, Django REST Framework and GraphQL on PostgreSQL, Celery for background jobs, and Vue 3 with Vite and Pinia for the apps. Railway runs the backend, Vercel runs the frontends, and GitHub Actions runs the tests and preview environments.
+Django, Django REST Framework and GraphQL on PostgreSQL, Celery with Redis for background jobs, and Vue 3 with Vite and Pinia for the apps. Railway runs the backend, Vercel runs the frontends, and GitHub Actions runs the tests and preview environments.

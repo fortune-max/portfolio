@@ -1,10 +1,10 @@
 ---
-title: "Three FunC bug reports: one false alarm, 1,000 TON, and a changed default"
+title: "Three FunC bug reports: one false alarm, two bounties, and a changed default"
 description: Between 2022 and 2024 I sent three bug reports about TON's smart-contract compiler. The first was my own fault, the second paid out the next day, and the third took six months.
 pubDate: 2026-11-11
 ---
 
-In 2022 I spent a lot of evenings on TON smart-contract contests. That's how I ended up sending three bug reports about the FunC compiler over about 15 months. One was my fault, one paid 1,000 TON, and one ended up changing a compiler default. Here's how each went.
+In 2022 I spent a lot of evenings on TON smart-contract contests. That's how I ended up sending three bug reports about the FunC compiler over about 15 months. One was my fault, one paid 1,000 TON, and one paid 250 TON and changed a compiler default. Here's how each went.
 
 Quick background if you haven't used it: FunC is the language TON smart contracts are written in. It looks a bit like C, compiles to Fift assembly, and runs on the TON Virtual Machine, which is a stack machine. Your variables are really names for slots on a stack, and the compiler's job is to shuffle those slots so the code does what you wrote. When it shuffles wrong, nothing crashes. A variable just ends up holding the wrong value, which in a smart contract can mean real money.
 
@@ -67,7 +67,7 @@ This one took a while. They confirmed it after three weeks, then said they neede
 
 After almost six months I got the full answer. The team already knew about the behaviour and had decided it wasn't serious enough to change. My report showed a case where it changed things "drastically and in unexpected way", and that was enough: `compute-asm-ltr` became **the default in FunC 0.5.0**, along with some other changes. The bounty was 250 TON, adjusted for the TON price when I reported it (I'd asked about that).
 
-It's the smallest of the three payouts, and the one I'm happiest about, because anyone writing FunC now gets the safer behaviour without ever reading my report.
+It's the smaller of the two payouts, and the one I'm happiest about, because anyone writing FunC now gets the safer behaviour without ever reading my report.
 
 ## What I took from it
 

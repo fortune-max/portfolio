@@ -31,9 +31,10 @@ test('five products in order, linking to their pages, alternating tones', async 
 test('awards and more rows', async ({ page }) => {
   await page.goto('/');
   const awards = page.locator('[data-awards] li');
-  await expect(awards).toHaveCount(5);
+  await expect(awards).toHaveCount(6);
+  await expect(awards.nth(1)).toContainText('250 TON');
   await expect(awards.first()).toContainText('1,000 TON');
-  await expect(page.locator('[data-more] li')).toHaveCount(3);
+  await expect(page.locator('[data-more] li')).toHaveCount(4);
 });
 
 test('no email address on the page', async ({ page }) => {

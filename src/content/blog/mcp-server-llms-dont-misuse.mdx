@@ -1,34 +1,18 @@
 ---
 title: An MCP server for a business team, and the mistakes the model kept making
-description: I put our platform's data behind an MCP server so the 12 people on our business team could ask Claude instead of asking me. These are the problems that showed up and how the server handles them.
+description: I put our platform's data behind an MCP server so the business team could ask Claude instead of asking me. These are the problems that showed up, and why the server ended up with two GraphQL tools instead of seventeen.
 pubDate: 2026-10-28
 ---
 
 For a while the most common thing I did at work wasn't writing features. It was answering questions. "Which investors have we talked to about this company?" "What did this startup report last quarter?" "Who do we know at that fund?" Each takes thirty seconds to answer and longer than that to get back into whatever I was doing.
 
-So I built an MCP server and let Claude answer them. MCP (Model Context Protocol) lets an assistant call tools you define. Now the whole business team, 12 people, asks their assistant directly, mostly when preparing for meetings. This is what I ran into building it.
+So I built an MCP server and let Claude answer them. MCP (Model Context Protocol) lets an assistant call tools you define. Now the business team asks their assistant directly, mostly when preparing for meetings. This is what I ran into building it.
 
 ## Small tools, all read-only
 
-The easy version would be one tool, `run_query(sql)`, plus a system prompt asking the model to be careful. I didn't want to rely on the model being careful, so the server only offers 19 small tools, like `search_investors`, `get_startup`, `list_contacts_at_company` and `portfolio_summary`. Each has a typed input and does one thing.
+The easy version would be one tool, `run_query(sql)`, plus a system prompt asking the model to be careful. I didn't want to rely on the model being careful, so the first version offered 17 fixed tools over our REST API, like `core_list_investors`, `core_get_startup` and `core_get_startup_reportings`. Each had a typed input and did one thing.
 
-```ts
-server.registerTool(
-  "search_investors",
-  {
-    description: "Find investors by name, company or tag. Read-only.",
-    inputSchema: {
-      query: z.string().min(2),
-      fields: z.array(z.string()).optional(), // see "asking for too much" below
-      limit: z.number().int().max(200).default(25),
-    },
-  },
-  async ({ query, fields, limit }) => runReadOnly("investors", { query, fields, limit }),
-);
-```
-
-None of the tools can write anything. The worst a bad call can do is return a wrong answer, and a person reads the answer before doing anything with it. The model also picks the right tool more often when the choices are specific than when one tool does everything.
-
+None of the tools can write anything. The worst a bad call can do is return a wrong answer, and a person reads the answer before doing anything with it. 
 ## Problem 1: asking for too much
 
 An investor record has dozens of fields: addresses, flags, timestamps, related records. If you send all of that back for "who are our fintech investors?", you fill the model's context with things it won't use, and the answer gets worse.
@@ -46,14 +30,14 @@ If the model doesn't ask for anything specific, it gets a short default set inst
 
 ## Problem 2: guessing field names
 
-Ask about someone's company and in one afternoon you'll see the model ask for `companyName`, `company`, `organisation` and `org_name`. Rejecting the call meant an apology from the model, another guess, and a few wasted round trips.
+Ask how much a round has raised and in one afternoon you'll see the model ask for `total_amount_raised`, `raised_amount` and `current_amount`, none of which exist. Rejecting the call meant an apology from the model, another guess, and a few wasted round trips.
 
 So the server keeps a short list of common guesses for each resource and maps them to the real names:
 
 ```ts
 const SYNONYMS: Record<string, string> = {
-  companyName: "company", organisation: "company", org_name: "company",
-  email_address: "email", fullName: "name",
+  total_amount_raised: "amount_committed", raised_amount: "amount_committed",
+  current_amount: "amount_committed", "startup.name": "startup_name",
 };
 
 function normalizeFields(fields: string[], allowed: Set<string>) {
@@ -74,10 +58,40 @@ Read-only isn't the same as harmless. A vague question can still ask for every r
 
 When a limit is hit, the model gets a plain message like "too many rows, add a filter" and narrows the question, which is what a person would do too.
 
+## Version two: two tools instead of seventeen
+
+The fixed tools had a problem that got worse every month: the backend kept growing and the MCP server didn't. A new field meant a new release of the server, and a question nobody had planned for meant a new tool.
+
+When our new backend shipped with a GraphQL API, I replaced all 17 with two:
+
+```ts
+export const graphqlQueryCfg = {
+  description: "Run a READ-ONLY GraphQL query against core data. Call core_graphql_schema first " +
+    "if unsure of the field names. Results cap at 5000 rows; request only the fields you need.",
+  inputSchema: {
+    query: z.string(),
+    variables: z.record(z.any()).optional(),
+  },
+  annotations: { readOnlyHint: true },
+};
+```
+
+The second tool, `core_graphql_schema`, takes no input at all and returns a short guide: the entry points, the filters, and example queries for the questions people actually ask.
+
+This solved the staleness problem: anything the backend adds to its schema can be queried the same day, with no change to the MCP server. It also made problems 1 and 2 mostly go away, because choosing fields is just how GraphQL works, and the guide shows the model the real names before it starts guessing. The limits moved into the backend's GraphQL view, so they apply to every query whichever way it arrives.
+
+The other thing I'd tell anyone building one of these: fewer tools with fewer inputs work better. A tool with two inputs is hard to call wrong. Seventeen tools with five optional parameters each gave the model a lot of ways to pick almost the right one.
+
+## Where to put the warning
+
+The server also has a semantic search over email, notes and decks. Semantic search always returns its closest matches, even when nothing really matches, so it's a bad way to answer "have we ever emailed this person?". The tool's parameter docs said so. The model still used it for exactly that, and when I checked a real batch of those questions, 43% of the "no" answers were wrong.
+
+The model reads a tool's top-level description when choosing a tool, and the parameter descriptions only after it has chosen. So I moved the warning into the first lines of the description, and added an exact email-thread query to GraphQL whose "no" can be trusted.
+
 ## What people actually use it for
 
 Nothing exotic. Notes before an investor meeting, "have we talked to anyone at this company?", the latest numbers for a startup before a call, and who we know at a particular firm. They're the same questions that used to come to me.
 
 ## What's missing
 
-I log which tools run and how long they take. What I'd really like to see is the questions people asked that the server couldn't answer, because that's the list of tools to build next. The synonym list is also still maintained by hand, and should really be built from the field names the model asks for that don't exist.
+I log which tools run and how long they take. What I'd really like to see is the questions people asked that the server couldn't answer, because that's the list of tools to build next. The schema guide is also still written by hand. It's a list of examples rather than a contract, so it can't break anything when it falls behind, but generating the common queries from what people actually ask would be better.

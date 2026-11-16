@@ -3,13 +3,12 @@ title: MCP server
 order: 2
 label: MCP server
 headline: Letting the business team ask the database themselves.
-summary: "An MCP server that lets the whole 12-person business team query our platform through Claude: investor briefings, who we've talked to, and who we know at a company."
+summary: "An MCP server the business team uses through Claude for investor briefings, who we've talked to, and who we know at a company. It started as 17 fixed tools and is now two GraphQL tools that never fall behind the backend."
 role: Designed and built
 period: 2025 – 2026
-stack: [TypeScript, Express, MCP SDK, GraphQL, Docker, Railway]
+stack: [TypeScript, Express, MCP SDK, GraphQL, Django, Docker, Railway]
 metrics:
-  - { label: people using it, value: "12" }
-  - { label: tools, value: "19, read-only" }
+  - { label: tools, value: "17 → 5, read-only" }
   - { label: row cap, value: "5,000" }
   - { label: query timeout, value: "20 s" }
 ---
@@ -19,26 +18,43 @@ import McpFlow from '../../components/diagrams/McpFlow.astro';
 
 On a small team the engineer ends up being the search box. "Have we talked to anyone at this company?" "What did this startup report last quarter?" "Who do we know at that fund?" None of these are hard, but each one used to be a message to me, and I'd lose ten minutes getting back into whatever I was doing.
 
-The answers were already in the platform behind an internal GraphQL API. What the team didn't have was a way to ask in plain English. MCP (Model Context Protocol) lets an assistant like Claude call tools you write, so I wrote some.
-
-## What it does
-
-The server gives Claude 19 small, read-only tools: search investors, get a startup, list our contacts at a company, summarise a portfolio, and so on. Someone on the team adds it to Claude once and then just asks. Today all 12 people on the business team use it, mostly for meeting prep and quick lookups.
+The answers were already in the platform. What the team didn't have was a way to ask in plain English. MCP (Model Context Protocol) lets an assistant like Claude call tools you write, so I wrote some. Someone on the team adds it to Claude once and then just asks, mostly for meeting prep and quick lookups.
 
 <McpFlow />
 
-Each tool turns into a read-only query against the platform API, using a service token the server refreshes on its own. Nothing can write, so the worst a bad question can do is give a wrong answer, and a person reads the answer before acting on it.
+## Version one: a tool per question
 
-## Things the model got wrong, and what I did about it
+The first version, in 2025, had 17 fixed tools over the old REST API: list investors, get an investor, get a startup's reports, and so on. Each took an optional list of fields, so the model could ask for three columns instead of a record with dozens. It also kept a small map of the field names the model kept guessing (`total_amount_raised`, `raised_amount`, `current_amount`) and pointed them at the real one.
 
-**It guesses field names.** Ask about an investor's company and the model will happily ask for `companyName`, `company`, `organisation` or `org_name`. At first that meant a failed call, an apology from the model and another guess. Now the server keeps a short list of common guesses per resource, maps them to the real field, and says which fields exist when it can't.
+It worked, but it had a cost I didn't like. Every time the backend grew, the MCP server fell behind. A new field meant a new release, and a question nobody had planned for meant a new tool.
 
-**It asks for too much.** A raw investor record has dozens of fields. Sending all of them back for "list our fintech investors" fills the context window with junk and makes the answer worse. Every tool takes an optional list of fields and returns only those. If the model doesn't ask for specific fields, it gets a small default set.
+## Version two: GraphQL, and fewer inputs
 
-**It doesn't know when to stop.** Read-only can still mean "read the whole table". Every query has a 5,000-row cap and a 20-second timeout, enforced on the server. When a limit hits, the model gets a plain message ("too many rows, add a filter") and usually just narrows the question.
+When the new backend shipped with a GraphQL API, I replaced the fixed tools with two:
 
-All of these checks live in the server, not in the prompt, so they still apply when the model ignores its instructions.
+- `core_graphql_query` takes a query and, optionally, its variables. Nothing else.
+- `core_graphql_schema` takes nothing and returns a short guide: the entry points, the filters, and example queries for the common questions.
+
+That fixed both problems at once. Anything the backend adds to its GraphQL schema can be queried the same day, with no change to the MCP server. And picking fields is now just how GraphQL works, so the field lists and guessed-name maps went away. The only thing I keep up by hand is the guide, and it's a list of examples, not a contract.
+
+I also learned that agents do better with fewer, simpler tools. Two inputs are hard to get wrong. Seventeen tools with five optional parameters each gave the model a lot of ways to pick slightly the wrong one.
+
+## Limits live in the server, not the prompt
+
+Read-only isn't the same as harmless: a vague question can still ask for every row in a table. So the backend enforces the limits for every query, whatever the model was told:
+
+- read-only, through a service account that can only see what it was built to see
+- at most 5,000 rows
+- a 20-second database timeout, set per request
+
+When a limit is hit, the model gets a plain message and usually narrows the question, which is what a person would do too.
+
+## Search, and when not to use it
+
+The server also has a semantic search over email, internal notes and decks. It's good at "what did we discuss with this fund?" and bad at "have we ever emailed this person?", because it always returns its closest matches, even when nothing really matches. When I checked a real batch of "have we contacted these people" questions answered that way, 43% of the "no" answers were wrong.
+
+The fix had two parts. I added an exact email-thread query to GraphQL, so a "no" from it can be trusted. And I moved the warning from a parameter description, where the model read it too late, into the first lines of the tool's description.
 
 ## Stack
 
-TypeScript on Node with Express 5 and the official MCP SDK (Streamable HTTP), talking to the platform's GraphQL API. It's packaged with Docker and runs on Railway next to the rest of the platform.
+TypeScript on Node with Express 5 and the official MCP SDK (Streamable HTTP), in front of the Django backend's GraphQL API. It's packaged with Docker, lives in the same repository as the backend, and runs on Railway next to the rest of the platform.

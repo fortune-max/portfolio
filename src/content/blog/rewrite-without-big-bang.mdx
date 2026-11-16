@@ -4,7 +4,7 @@ description: How we replaced a seven-year-old VC platform one piece at a time, w
 pubDate: 2026-11-04
 ---
 
-Between late 2025 and autumn 2026 I led the rewrite of the platform I work on: the system investors use to put money into startups, and that the back office uses for onboarding, signatures, valuations and quarterly reports. For most of it we were two engineers. I proposed it, planned it and wrote most of the code.
+Between late 2025 and autumn 2026 I led the rewrite of the platform I work on: the system investors use to put money into startups, and that the back office uses for onboarding, signatures, valuations and quarterly reports. For most of it we were two engineers, down from six when I joined. I proposed it, planned it and wrote most of the code.
 
 The one thing I didn't want was a launch day: build the new system for a year, switch everything over on a Friday, and spend Monday finding out which investor's numbers are wrong. This post is about how we avoided that. It's the strangler-fig pattern, nothing new, but most write-ups I'd read stop before the boring details, so here are ours.
 
@@ -52,7 +52,7 @@ def check_parity(metric: str, ids: list[int]) -> list[Mismatch]:
     return mismatches
 ```
 
-There's nothing clever in it. It was useful because we ran it all the time. We got to 111 of 112 KPIs matching, and the last one was a change we made on purpose and wrote down before the switch.
+There's nothing clever in it. It was useful because we ran it all the time, and every difference it found either got fixed or got written down as a change we meant to make.
 
 ## Step 4: switch one app at a time
 
@@ -66,7 +66,7 @@ Only after both apps were running on the new backend did I touch hosting. Moving
 
 ## How two people managed it
 
-A lot of the typing was done by coding agents, which only works with some structure around it. Every bigger change started as a written spec and a step-by-step plan. About 4,000 tests ran on every pull request. Each pull request got its own preview environment with a copy of production data, so reviewing meant clicking a link. And nothing merged without an automated review on top of ours.
+A lot of the typing was done by coding agents, which only works with some structure around it. Every bigger change started as a written spec and a step-by-step plan. The tests ran on every pull request. Each pull request got its own preview environment with a copy of production data, so reviewing meant clicking a link. And nothing merged without an automated review on top of ours.
 
 ## What I'd do differently
 
