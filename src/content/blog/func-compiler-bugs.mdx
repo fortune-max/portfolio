@@ -52,16 +52,40 @@ Less than a day and a half. The reason it was taken seriously is that skipped co
 
 ## Report 3: argument order (January 2024)
 
-The last one was about the order arguments get evaluated in when you call an `asm` function. FunC lets you write functions directly in assembly, and their parameters can be listed in whatever order the assembly wants them on the stack. The compiler used to evaluate the arguments in that stack order, not left to right as you wrote them. Most of the time you'd never notice. When the arguments have side effects, like reading from the same slice twice, the order is everything:
+The last one was about the order arguments get evaluated in when you call an `asm` function. FunC lets you write functions directly in assembly, and their parameters can be listed in whatever order the assembly wants them on the stack. The standard library's `store_uint` is one of them:
 
 ```c
-;; a made-up example, not the code I reported
-(int, int) read_pair(slice cs) {
-  return pack(cs~load_uint(8), cs~load_uint(8));
-}
+builder store_uint(builder b, int x, int len) asm(x b len) "STUX";
 ```
 
-If `pack` is an `asm` function whose stack order is reversed, the two reads can happen in the opposite order and your two fields come back swapped. There was already an opt-in fix, `#pragma compute-asm-ltr`, but you only turn on things you know about.
+`asm(x b len)` means the value goes on the stack before the builder. The compiler used to evaluate the arguments in that stack order too, not left to right as you wrote them. Most of the time you'd never notice. When the arguments have side effects, like reading from the same slice twice, the order is everything. This is the core of what I sent:
+
+```c
+cell hey_cell = begin_cell().store_uint(7, 4).store_uint(3, 3).end_cell();
+
+;; this fails
+slice hey_slice = hey_cell.begin_parse();
+builder some = begin_cell()
+  .store_uint(hey_slice~load_uint(4), 4)
+  .store_uint(hey_slice~load_uint(3), 3);
+~dump([123, some.end_cell().begin_parse().preload_uint(4)]); ;; [123, 11] False
+
+;; works and same as above but with a modifier method
+slice hey_slice_2 = hey_cell.begin_parse();
+builder some_2 = begin_cell()
+  .store_uint(hey_slice_2~load_uint(4), 4);
+some_2~store_uint(hey_slice_2~load_uint(3), 3);
+~dump([124, some_2.end_cell().begin_parse().preload_uint(4)]); ;; [124, 7] OK
+```
+
+The cell holds the bits `0111 011`: a 7 in four bits, then a 3 in three. In the chained version, the outer `store_uint`'s value is `load_uint(3)` and its builder is the whole inner chain, so the 3-bit read ran first:
+
+| | first read | second read | stored first |
+|---|---|---|---|
+| What I wrote | 4 bits: `0111` = 7 | 3 bits: `011` = 3 | 7 |
+| What ran | 3 bits: `011` = 3 | 4 bits: `1011` = 11 | 11 |
+
+Both reads succeed and return valid numbers, just the wrong ones, and nothing errors. Chaining `store_` calls while reading from an incoming message is one of the most common things you do in a contract, for example when copying fields into an outgoing message. There was already an opt-in fix, `#pragma compute-asm-ltr`, but you only turn on things you know about.
 
 This one took a while. They confirmed it after three weeks, then said they needed more time, then that they were preparing a bigger FunC update that would cover it. I followed up about once a month.
 
