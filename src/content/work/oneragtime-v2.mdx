@@ -20,33 +20,35 @@ import StranglerFig from '../../components/diagrams/StranglerFig.astro';
 
 OneRagtime is a venture platform. Investors put money into startups through funds and single-deal vehicles, and a back office runs the rest: onboarding, compliance checks, signatures, valuations, quarterly reports. About €97M has gone through it since 2018.
 
-When I joined as an intern in 2023, the code was already five years old: a Django app on MySQL and AWS, with an investor app half on an older Vue setup. It worked. It was also getting slower to change every month, and it cost a lot to host for the size of team we had.
+When I joined as an intern in 2023, the back office had grown over years, with many people's ideas of how things should work layered on top of each other. It ran, but every change took longer than it should, and it was due an overhaul.
 
-By late 2025 I'd been one of two engineers for a while, and I made the case for a rewrite. I wrote the plan, led it, and wrote most of the code: the new data model, the backend, the frontend base and design system, the checks that the numbers still matched, and the hosting move. My colleague built features on top as we went. Since September 2026 I've been the only engineer, and I'm now onboarding the next one.
+By late 2025 I'd been one of two engineers for a while, and I made the case for a rewrite. I wrote the plan, led it, and wrote most of the code: the new UI, the new schema and backend, the data migration, and the hosting move. My colleague built features on top as we went. Since September 2026 I've been the only engineer, and I'm now onboarding the next one.
 
 ## How we did it without a launch day
 
-The thing I was most scared of was a launch weekend: switch everything over on a Friday and find out on Monday that someone's investment shows the wrong amount. So the rule was that there would never be a big switch.
+The thing I was most scared of was a launch weekend: switch everything over on a Friday and find out on Monday that someone's investment shows the wrong amount. So we never had one big switch.
 
 <StranglerFig />
 
-In order, that meant:
+**First, a new UI next to the old one.** I rebuilt the back-office screens to be clearer and more modern, with numbers formatted properly for a mostly French team (they don't write numbers the way I do). The new version lived on its own domain and talked to the same old backend, while the old version stayed up on another. People could use whichever they liked. Some pages were a bit slower at first, but that wasn't the point yet. Over a few months more and more of the team stopped opening the old one, until nobody did.
 
-1. **New frontends first, on the old API.** People got the new admin and investor apps months before any backend changed, and I learned what every screen really needed by rebuilding it.
-2. **A new backend on the same tables.** The new Django project points at the existing database and doesn't own the schema (`managed = False`). Old and new code read and write the same rows, so there's nothing to sync.
-3. **Check the numbers before switching.** A small harness ran valuations, KPIs and investor positions through both systems and listed every difference.
-4. **Switch one app at a time.** The admin app first, since its users were the internal team and would tell me fast if something was off. The investor app about ten days later. Going back would have meant pointing the frontend at the old API again.
-5. **Then move house.** MySQL to Postgres, AWS to Railway and Vercel, and the old servers switched off.
+**Then, a new backend and schema.** I redesigned the schema based on what I now knew about how the product was actually used: removing tables that held a second copy of the truth, consolidating fields and dropping ones nothing used. I wrote an ETL script that takes a backup of the old database and produces a fully populated database in the new schema. I ran it on my machine against production copies, pointed a second version of the new UI at the result, and checked that everything matched the old system. That part took about three months.
+
+**Last, the investor app.** By then the new backend and the internal app shared one repository, so adding the investor-facing platform on top was much simpler. All of it, everyone's context, conventions and history, was in one place.
+
+About seven months in, we switched over completely. Migrations are never perfect, but this one went through with barely any complaints. Most of what we missed were small things, like a Slack notification the old system sent and nobody had written down.
+
+I started this with Cursor and moved more and more to Claude as it went. Having everything in one clean repository helped the agents a lot, and the more I corrected them, the better they got at following the patterns. It's the biggest and hardest build I've done so far.
 
 ## Bits that were harder than they looked
 
-**Sharing one schema between two codebases.** Every schema change had to keep the old app working too. I put clean models over the awkward legacy tables where I could, and changed the tables themselves slowly. By the end there were 101 tables instead of 154, and 14 migration files instead of 44.
+**The schema.** Working out which of 154 tables were still the source of truth for something took most of the thinking. By the end there were 101 tables, and 14 migration files instead of 44.
 
 **Agreeing on what "the same numbers" means.** The harness got to 111 of 112 KPIs matching. The last one was a change we made on purpose and wrote down before switching. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
 
-**The database move.** MySQL to Postgres was a separate step, not mixed in with any refactoring. I wrote a migration script that could be run again safely, practised it on copies of production until it was dull, and ran it for real once.
+**The database move.** Going from MySQL to Postgres at the same time meant the ETL script had to be safe to run again and again. I practised it on copies of production until it was dull, and then ran it for real once.
 
-**Doing it with two people.** We used coding agents for a lot of the typing. To keep that safe there were written specs before code, around 4,000 tests running on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
+**Keeping agents honest.** To trust that much agent-written code there were written specs before code, around 4,000 tests running on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
 
 ## Numbers
 

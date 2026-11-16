@@ -20,7 +20,7 @@ for (const path of ['/work/nope', '/blog/nope', '/notes']) {
 
 test('no page scrolls horizontally at 360px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
-  const paths = ['/', '/blog', '/cv', '/contact'];
+  const paths = ['/', '/about', '/blog', '/cv', '/contact'];
   await page.goto('/');
   paths.push(...(await page.locator('a[href^="/work/"]').evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute('href')!))])));
   await page.goto('/blog');

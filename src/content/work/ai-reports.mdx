@@ -14,9 +14,13 @@ metrics:
 ---
 import ReportPipeline from '../../components/diagrams/ReportPipeline.astro';
 
+## Where it came from
+
+It started with pitch decks. Startups applying to raise money send a deck, and every deck puts the important things in a different place. When structured output arrived in the OpenAI API, I built a tool that pulls out what the investment team needs to decide quickly: founders, location, product, business model, go-to-market, competitors, sector, stage and how much they're raising. The team could skim that instead of the whole deck. Reports were the next obvious step.
+
 ## The old way
 
-Every quarter a VC firm writes its investors a short report on each company in the portfolio: revenue, burn, runway, headcount, whatever else that company tracks, and a few lines on how it's going. The raw material is whatever the founders send, usually a deck, sometimes a PDF, now and then a spreadsheet with creative formatting.
+Every quarter a VC firm writes its investors a short report on each company in the portfolio: revenue, burn, runway, headcount, whatever else that company tracks, and a few lines on how it's going. The raw material is whatever the founders send: decks, spreadsheets, emails, all in different shapes, while the report has to come out in our own standard format.
 
 An analyst read each one, found the numbers, compared them with last quarter and wrote it up. That took about four hours per company, for every company, every quarter.
 
@@ -30,9 +34,9 @@ The part I cared about most was trust. An LLM will read a deck and give you a co
 
 <ReportPipeline />
 
-For each company, the pipeline looks at which KPIs it reported last quarter and builds a structured-output schema for this run, with one field per KPI. Each field holds the value, the unit, the period and the source. I use Pydantic's `create_model` for that, so a marketplace gets asked about GMV, a SaaS company about ARR, and nobody gets asked about things they don't track.
+The team uploads whatever the founder sent for the quarter. For each company, the pipeline looks at last quarter's report and the KPIs in it and builds a structured-output schema for this run, with one field per KPI. Each field holds the value, the unit, the period and the source. I use Pydantic's `create_model` for that, so a marketplace gets asked about GMV, a SaaS company about ARR, and nobody gets asked about things they don't track.
 
-Gemini fills the schema from the new deck. The result is checked for types and for a source on every value, and written into our reporting workspace in Notion as a draft.
+Gemini fills the schema from the new material, along with the cash and runway, business and product news, and anything else worth reporting. The result is checked for types and for a source on every value, and written into our reporting workspace in Notion as a draft.
 
 ## Caveats
 

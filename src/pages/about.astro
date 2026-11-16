@@ -1,0 +1,90 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MonoLabel from '../components/MonoLabel.astro';
+import '../styles/prose.css';
+---
+<BaseLayout title="About" description="How Fortune Max-Eguakun got into building software, from PvP games in a school computer lab to running engineering at a VC platform.">
+  <section class="tone-dark page">
+    <div class="wrap">
+      <MonoLabel text="About" />
+      <h1 class="display title">I've been building things since I was 14.</h1>
+      <div class="prose">
+        <p>
+          It started with small PvP games in the school computer lab. My friends would suggest characters, I'd make them,
+          and they'd use them as their avatars when we fought. It was just a small thing we did. From there I moved on to
+          modding GTA San Andreas, changing the gameplay, the maps and how things behaved.
+        </p>
+        <p>
+          At some point I decided to learn it properly. Java came first, for small Android apps, then Python for
+          scripting. Android got me into Linux, since that's what's underneath, and Linux got me into rooting phones and
+          seeing how far I could push them. That's also where C++ came in, first for working with binaries and later for
+          competitive programming.
+        </p>
+        <p>
+          The biggest thing I built in that phase was an anti-theft app for Android. It took a screenshot every 30 seconds
+          and stored it on the phone and in your Google Drive, and on every reboot it fetched and ran a script you'd set
+          up in advance: get the location, lock the device, remove a password, whatever you needed. The original idea
+          was actually simpler. If you saw something on your phone and forgot where, you could search your screenshots in
+          Drive and find it. I still have that data somewhere.
+        </p>
+
+        <h2>Engineering, then software</h2>
+        <p>
+          I did my bachelor's in mechanical engineering at the University of Benin. I already liked programming and
+          figured an engineering degree would teach me things I wouldn't pick up on my own. My final-year project was a
+          hybrid go-kart with an engine and an electric motor. I enjoy physical engineering, but I like software more,
+          because you can go from an idea to something people use much faster.
+        </p>
+        <p>
+          Competitive programming filled the gaps: Code Jam, Hash Code, Hacker Cup, and TON smart-contract contests. I
+          was often near the top in Nigeria. Mostly I just liked how the problems made me think, and I'd sometimes spend
+          longer on one than I should have.
+        </p>
+
+        <h2>Bank of America, and a Raspberry Pi</h2>
+        <p>
+          In 2019 I had internship offers from Goldman Sachs and Bank of America, and picked Bank of America because they
+          could offer six months in Dublin instead of a summer. It was my first time on a big team, and I learned a lot
+          about reporting on my work and asking good questions. I helped with the move from Python 2 to 3 before Python
+          2's end of life and built a dashboard for viewing trades from different booking systems. The team was in London
+          and India, with a lot of approvals and older tech. It was useful, but it wasn't my speed.
+        </p>
+        <p>
+          Around the same time my university asked me to look at how they managed student results. It was an MS Access
+          database. I proposed something better and built it with two other students: registration, results, GPA, and
+          the result sheets that get printed and pinned up each semester. It's sensitive work, because a GPA decides
+          whether someone graduates. The school wanted it on their premises, so it first ran on a Raspberry Pi on campus,
+          which got tricky once I was travelling. The other two moved on, I kept going, and it now runs on Railway
+          for about $5 a month. Five departments still use it, and I'm still shipping updates.
+        </p>
+
+        <h2>Master's, and OneRagtime</h2>
+        <p>
+          For my master's at Harbour.Space in Barcelona I picked front-end engineering because it was the side I knew
+          least. I'd always built backends and simple UIs. The degree showed me how much goes into a good interface:
+          frameworks, performance, WebAssembly, canvas, web workers. My capstone was CloudStation3. I'd moved to Barcelona
+          and couldn't bring my PlayStation, so I built a way to play my games from any device.
+        </p>
+        <p>
+          During the master's I started a one-year internship at OneRagtime, a VC platform, in April 2023. I'd already
+          been building things for years, so I could deliver more than they expected from an intern, and they offered me a
+          full-time role. I've kept trying ideas there: JSDoc types as a stopgap so the frontend and backend agreed on
+          their contracts without asking the whole team to switch tools, an LLM tool that pulls the important parts out of startup pitch
+          decks, AI-drafted quarterly reports, and then the rewrite of the whole platform. For about a year we were two
+          engineers. Since September 2026 I've been the only one, and I'm now onboarding the next.
+        </p>
+
+        <h2>Now</h2>
+        <p>
+          I'm still learning how far I can push AI tools in my own work. I build with coding agents every day, and on the
+          side I'm building ThinClaw, a personal assistant that's actually useful to me. I'm looking for a senior backend
+          or full-stack role. If that's what you're hiring for, <a href="/contact">say hi</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .page { background: var(--bg); color: var(--fg); padding-block: clamp(2.5rem, 6vw, 5rem) 5rem; }
+  .title { font-size: var(--step-4); margin: 0 0 2.5rem; max-width: 16ch; }
+</style>
