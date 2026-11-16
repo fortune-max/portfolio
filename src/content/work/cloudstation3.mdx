@@ -3,15 +3,14 @@ title: CloudStation3
 order: 5
 label: CloudStation3
 headline: PS3 games, in a browser tab.
-strike: PS3
-summary: A game-streaming tech demo. A patched PS3 emulator renders on a Linux GPU box, a C++ streamer encodes with NVENC and sends it over WebRTC, and your browser's gamepad drives a virtual joystick. My MEng capstone.
-role: Built solo (MEng capstone)
+summary: A game-streaming demo and my MEng capstone. A patched PS3 emulator runs on a Linux machine with a GPU, a C++ streamer sends the picture to your browser over WebRTC, and your gamepad drives a virtual joystick on the other end.
+role: Solo (MEng capstone)
 period: Nov 2023 – Sep 2024
 stack: [C++, FFmpeg, NVENC, WebRTC, Python, Vue 3, Linux uinput]
 metrics:
-  - { label: frame size in shared memory, value: "3.7 MB" }
-  - { label: encode, value: "H.264 on GPU" }
   - { label: video, value: "720p · 25 fps" }
+  - { label: frame in shared memory, value: "3.7 MB" }
+  - { label: encoding, value: "H.264 on the GPU" }
   - { label: license, value: "MIT" }
 links:
   - { label: Source on GitHub, href: "https://github.com/fortune-max/cloudstation3" }
@@ -19,50 +18,32 @@ links:
 ---
 import StreamPipeline from '../../components/diagrams/StreamPipeline.astro';
 
-## The problem
+## Why I built it
 
-Cloud gaming services make "play anything in a browser" look easy. I wanted to find out how much of it a single engineer could rebuild from parts: an open-source emulator, a consumer GPU and the WebRTC stack every browser already ships. The constraints I set myself were no emulator rewrite, no proprietary streaming SDK, and controller input that feels native.
+Cloud gaming services make "play anything in a browser" look easy, and I wanted to know how much of it one person could put together from parts: an open-source emulator, a normal GPU and the WebRTC support every browser already has. My own rules were no rewriting the emulator, no paid streaming SDK, and a controller that feels like a controller.
 
-(It's a personal tech demo, not a service. No games, BIOS or firmware are included. Bring your own, legally dumped.)
+It's a tech demo, not a service. No games or firmware are included, so bring your own.
 
-## What I built
-
-Four pieces, all written by me:
-
-1. **A small patch to RPCS3**, the PS3 emulator. It hooks the emulator's recording path and writes every finished frame into POSIX shared memory.
-2. **A C++ streamer** that reads frames from shared memory, converts and encodes them with FFmpeg's `h264_nvenc` on the GPU, and sends them over WebRTC with libdatachannel. It also receives controller input and turns it into a virtual Linux joystick.
-3. **A signalling server** in Python asyncio that introduces browsers to the streamer and then gets out of the way.
-4. **A Vue 3 player** that shows the stream, reads the browser's Gamepad API and reports live stats (FPS, connection state, input log).
-
-## How it works
+## How the picture gets to your browser
 
 <StreamPipeline />
 
-Video flows one way and input flows the other. The emulator copies each 1280×720 frame into shared memory. The streamer memory-maps it, converts BGRA to YUV, encodes H.264 with no B-frames and a short keyframe interval, and packetises it as RTP over an encrypted WebRTC connection. The browser decodes it in hardware.
+I added a small hook to RPCS3, the PS3 emulator, so every finished frame gets copied into shared memory. A 720p frame is about 3.7 MB, and at 25 frames a second I didn't want to push that through a socket just to move it from one process to the next.
 
-Input comes back over a WebRTC DataChannel as small evdev-style events. On the host, the streamer creates a virtual joystick through Linux `uinput`, so the emulator sees an ordinary controller and needs no changes at all.
+A C++ program on the same machine reads each frame from there, converts it from BGRA to YUV, and encodes it as H.264 on the GPU with NVENC. I turned off B-frames, which make the encoder wait for future frames, kept keyframes close together so a lost packet recovers quickly, and kept the bitrate around 1 Mbps. The video then goes out over WebRTC using libdatachannel, which gives you encryption, congestion control and hardware decoding in the browser for free.
 
-## The hard parts
+A small Python signalling server introduces each browser to the streamer and then gets out of the way.
 
-### Moving frames without copying them twice
+## How your controller gets back
 
-A raw 720p frame is about 3.7 MB. Pushing that through a socket at 25 fps is a lot of copying for nothing. Shared memory lets the emulator write once and the streamer read in place. The trade-off is synchronisation: my first version used a semaphore, and the final one polls every 10 ms. That's simpler, but it can occasionally race, which I'd fix properly next time.
+The browser reads your gamepad through the Gamepad API and sends button and stick changes back over a WebRTC DataChannel. On the Linux side the streamer creates a virtual joystick with `uinput`, so as far as the emulator knows, someone just plugged in a USB controller. The emulator needed no changes at all for input.
 
-### Latency comes from the encoder settings
+This started as a separate experiment I called joystream, a browser joystick over WebSocket, and later moved into the same WebRTC connection as the video.
 
-The defaults of most encoders are built for quality, not interactivity. I turned off B-frames (they make the encoder wait for future frames), kept a short GOP so a lost packet heals quickly, and capped the bitrate around 1 Mbps. WebRTC instead of a WebSocket or MJPEG stream meant congestion control, NACK-based recovery and hardware decode in the browser for free.
+## What I'd fix
 
-### Input without touching the emulator
-
-Instead of teaching the emulator about network controllers, the streamer pretends to be a USB gamepad. Linux `uinput` makes a virtual device indistinguishable from real hardware. It started as a separate prototype ("joystream", a browser joystick over WebSocket) and became a DataChannel inside the same WebRTC session.
-
-## Numbers
-
-- **1280×720** BGRA frames, about **3.7 MB** each, moved through shared memory.
-- **H.264 on the GPU** with NVENC, no B-frames, keyframe every 10 frames, ~1 Mbps.
-- **25 fps**, to more than one browser viewer at a time.
-- Released as open source under **MIT**.
+The streamer polls shared memory every 10 ms instead of using a proper signal. I tried a semaphore first and dropped it, so it can very occasionally read a half-written frame. Audio is captured but never streamed. Without a TURN server, some networks can't connect at all. And I never properly measured the delay from button press to picture, which is the first thing I'd add.
 
 ## Stack
 
-C++ with FFmpeg (libswscale, `h264_nvenc`) and libdatachannel for WebRTC. Python asyncio for signalling. Vue 3 and Vuetify for the player. Linux libevdev/uinput for input, and Docker and Let's Encrypt for deployment.
+C++ with FFmpeg (libswscale and `h264_nvenc`) and libdatachannel for WebRTC. Python asyncio for signalling, Vue 3 and Vuetify for the player, and Linux libevdev and uinput for input. Deployed with Docker and Let's Encrypt.

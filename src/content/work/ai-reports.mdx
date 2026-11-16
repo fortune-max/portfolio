@@ -2,58 +2,42 @@
 title: AI reporting pipeline
 order: 3
 label: AI reports
-headline: Portfolio reports in 15 minutes, not 4 hours.
-strike: 4 hours
-summary: An LLM pipeline that drafts quarterly portfolio reports, citing a slide or page for every figure. Analysts went from about four hours per report to a 10–15 minute review.
+headline: Quarterly reports drafted by an LLM and checked by a person.
+summary: A pipeline that drafts our quarterly portfolio reports and cites the slide or page behind every figure. Analysts went from about four hours per report to a 10–15 minute review.
 role: Designed and built
 period: 2025 – 2026
 stack: [Python, Django, Pydantic, Gemini, Celery, Notion API]
 metrics:
-  - { label: time per report, value: "4 h → ~15 min" }
+  - { label: time per report, value: "4 h → 15 min" }
   - { label: analyst hours saved, value: "~100 / quarter" }
-  - { label: figures without a source, value: "0" }
+  - { label: reports drafted, value: "almost all, since Q3 2025" }
 ---
 import ReportPipeline from '../../components/diagrams/ReportPipeline.astro';
 
-## The problem
+## The old way
 
-Every quarter, a VC firm owes its investors a report on every company in the portfolio: revenue, burn, runway, headcount and whatever else that company tracks, plus a short narrative. The raw material is whatever the founders send. That's usually a deck, sometimes a PDF, occasionally a spreadsheet with creative formatting.
+Every quarter a VC firm writes its investors a short report on each company in the portfolio: revenue, burn, runway, headcount, whatever else that company tracks, and a few lines on how it's going. The raw material is whatever the founders send, usually a deck, sometimes a PDF, now and then a spreadsheet with creative formatting.
 
-An analyst would read each one, find the numbers, check them against last quarter and write it up. About four hours per company, multiplied by the whole portfolio, every quarter.
+An analyst read each one, found the numbers, compared them with last quarter and wrote it up. That took about four hours per company, for every company, every quarter.
 
-It's the obvious LLM use case and the obvious LLM trap. A model will read a deck and produce a confident summary. In investor reporting, a confident wrong number is worse than no number at all.
+## What changed
 
-## What I built
+Since Q3 2025 a pipeline writes the first draft of almost every report, and the analyst checks it instead of writing it. A check takes 10–15 minutes, so the team gets back roughly 100 hours a quarter.
 
-A pipeline that drafts each report and makes the model **show its work**. Every figure in the draft carries a citation (slide 7, page 3), so the analyst's job changes from writing to checking. Since Q3 2025 it has drafted nearly all portfolio reports, and review takes 10–15 minutes per company.
+The part I cared about most was trust. An LLM will read a deck and give you a confident summary, and in a report to investors a confident wrong number is worse than a missing one. So every figure in a draft has to say where it came from (slide 7, page 3), and the analyst checks it against that.
 
 ## How it works
 
 <ReportPipeline />
 
-For each company, the pipeline looks at which KPIs that company reported last quarter. It builds a structured-output schema **at runtime** with one field per KPI. Each field holds the value, the unit, the period and a citation to where it was found. The model fills the schema from the new deck. Validation checks the types and that every value points at a real source. The result is written into the reporting workspace as a draft for an analyst to approve.
+For each company, the pipeline looks at which KPIs it reported last quarter and builds a structured-output schema for this run, with one field per KPI. Each field holds the value, the unit, the period and the source. I use Pydantic's `create_model` for that, so a marketplace gets asked about GMV, a SaaS company about ARR, and nobody gets asked about things they don't track.
 
-## The hard parts
+Gemini fills the schema from the new deck. The result is checked for types and for a source on every value, and written into our reporting workspace in Notion as a draft.
 
-### A schema per company, generated on the fly
+## Caveats
 
-A fixed schema doesn't work when every startup tracks different things. A marketplace cares about GMV, a SaaS company about ARR, a hardware startup about units shipped. Using Pydantic's `create_model`, the pipeline builds a model class per company from its own history, so the LLM is asked exactly the right questions and nothing else.
-
-### Making citations mandatory, not decorative
-
-"Please cite your sources" in a prompt is a suggestion. A required `source` field in a schema, validated afterwards, is a rule. Values without a resolvable citation fail validation and are left blank in the draft. That's the right failure mode: an analyst fills a blank in seconds, but hunting for a subtly wrong number takes the whole review.
-
-### Keeping humans in charge
-
-The output is a draft, never a sent report. The workflow keeps the analyst as the author of record, with the draft, the sources and last quarter's figures side by side. The point was never to remove the review. It was to remove the four hours of typing before it.
-
-## Numbers
-
-- About **4 hours → 10–15 minutes** of review per report.
-- Roughly **100 analyst-hours saved per quarter**.
-- Nearly **every** portfolio report since Q3 2025 started as a pipeline draft.
-- By design, **no** figure reaches a draft without a cited source.
+It drafts; it doesn't publish. An analyst is still the author of every report, and nothing goes to investors without that review. Founders who change their KPIs between quarters still need a human to decide what to do, and decks that are mostly images need more checking.
 
 ## Stack
 
-Python and Django with Celery workers. Pydantic for runtime-generated structured-output schemas. Gemini for extraction (migrated from an earlier OpenAI/LangChain version), and a custom Notion client with rate-limit backoff for writing the drafts.
+Python and Django with Celery workers, Pydantic for the per-company schemas, Gemini for extraction (we moved over from an earlier OpenAI and LangChain version), and a small Notion client with retry on rate limits for writing the drafts.

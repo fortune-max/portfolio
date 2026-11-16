@@ -16,7 +16,7 @@ const date = d.pubDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'sho
 ---
 <ProseLayout title={d.title} description={d.description} label={d.archive ? 'Archive · 2016' : 'Writing'} meta={`${date} · ${readingTime(entry.body ?? '')} min read`}>
   <a slot="back" class="mono back" href="/blog">← All writing</a>
-  {!d.archive && <p class="tldr" data-tldr><span class="mono">TL;DR</span> {d.tldr}</p>}
+  {!d.archive && d.tldr && <p class="tldr" data-tldr><span class="mono">TL;DR</span> {d.tldr}</p>}
   <Content />
   <nav slot="footer" class="mono pager"><a href="/blog">← All writing</a><a href="/contact">Say hi ↗</a></nav>
 </ProseLayout>

@@ -11,7 +11,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 
   <section class="tone-dark page">
     <div class="wrap">
       <MonoLabel text="Writing" />
-      <h1 class="display title">Things I broke, fixed and learned.</h1>
+      <h1 class="display title">Writing</h1>
       <ol class="posts" data-current>
         {current.map((p) => (
           <li>
@@ -23,7 +23,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 
       </ol>
       <div class="archive" data-archive>
         <h2 class="mono ah">Archive (2016)</h2>
-        <p class="note">From my first blog, slaycode.wordpress.com. Teenage me, rooting phones and botting games.</p>
+        <p class="note">From my first blog, slaycode.wordpress.com. Mostly student me, rooting phones and writing bots for mobile games.</p>
         <ul class="posts small">
           {archive.map((p) => (
             <li><p class="mono meta">{fmt(p.data.pubDate)}</p><a class="t2" href={`/blog/${p.id}`}>{p.data.title}</a></li>

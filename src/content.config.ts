@@ -24,7 +24,7 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    tldr: z.string(),
+    tldr: z.string().optional(),
     pubDate: z.coerce.date(),
     archive: z.boolean().default(false),
     originalUrl: z.url().optional(),

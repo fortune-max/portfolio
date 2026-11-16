@@ -59,3 +59,10 @@ test('muted text on light bands is readable (AA)', async ({ page }) => {
   });
   expect(ratio).toBeGreaterThanOrEqual(4.5);
 });
+
+test('home uses the slogan once and at most one strikethrough', async ({ page }) => {
+  await page.goto('/');
+  const text = await page.locator('body').innerText();
+  expect(text.match(/boring to run/gi)?.length ?? 0).toBe(1);
+  expect(await page.locator('main s').count()).toBeLessThanOrEqual(1);
+});

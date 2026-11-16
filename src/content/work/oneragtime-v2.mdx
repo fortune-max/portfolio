@@ -4,69 +4,57 @@ order: 1
 label: OneRagtime v2
 headline: Rewrite a live platform. No big bang.
 strike: big bang
-summary: I proposed, led and built most of the rewrite of a live VC platform, one surface at a time. Investors never noticed, and infra got about 95% cheaper.
+summary: I proposed and led the rewrite of a live VC platform, and wrote most of it. We moved it over one piece at a time, investors barely noticed, and hosting got about 95% cheaper.
 role: Proposed, led and built
 period: Nov 2025 – Oct 2026
 stack: [Django, PostgreSQL, Vue 3, Vite, Celery, Railway, Vercel]
 metrics:
   - { label: infra cost, value: "−95%" }
-  - { label: KPI parity vs legacy, value: "99.1%" }
+  - { label: KPI parity vs legacy, value: "111 / 112" }
   - { label: active investors, value: "~450" }
   - { label: automated tests, value: "~4,000" }
 ---
 import StranglerFig from '../../components/diagrams/StranglerFig.astro';
 
-## The problem
+## Where it started
 
-OneRagtime is a venture platform: investors back startups through funds and single-deal vehicles, and a back office runs the whole thing, from onboarding and compliance to signatures, valuations and quarterly reporting. Around €97M has gone through it since 2018.
+OneRagtime is a venture platform. Investors put money into startups through funds and single-deal vehicles, and a back office runs the rest: onboarding, compliance checks, signatures, valuations, quarterly reports. About €97M has gone through it since 2018.
 
-By 2025 the stack had been growing for seven years: a Django monolith on MySQL, an investor app partly on an older Vue setup, and cloud infrastructure sized for a bigger team than the one we had. It worked, but every new feature cost more than it should.
+When I joined as an intern in 2023, the code was already five years old: a Django app on MySQL and AWS, with an investor app half on an older Vue setup. It worked. It was also getting slower to change every month, and it cost a lot to host for the size of team we had.
 
-The obvious answer was "rewrite it". The obvious risk was the classic rewrite: two years in a branch, a big-bang launch weekend, and money-moving software that is subtly wrong on Monday. Real people's investments live in that database. So "no big bang" was the one non-negotiable.
+By late 2025 I'd been one of two engineers for a while, and I made the case for a rewrite. I wrote the plan, led it, and wrote most of the code: the new data model, the backend, the frontend base and design system, the checks that the numbers still matched, and the hosting move. My colleague built features on top as we went. Since September 2026 I've been the only engineer, and I'm now onboarding the next one.
 
-## What I built
+## How we did it without a launch day
 
-I proposed the rewrite, wrote the plan, and then built most of it: the new data model, the backend, the frontend foundations and design system, the parity work and the infrastructure move. Later, with a colleague, I built new features on top.
-
-The shape was a strangler fig. The new system grew around the old one and took over one surface at a time, until the old one could be switched off without anyone noticing.
-
-1. **New frontends on the old API.** A new admin app and investor app talked to the legacy backend first. Users got the new UI early, and I got to learn every screen's real requirements before touching the data.
-2. **A new backend over the old tables.** A fresh Django project mapped onto the existing schema (Django's `managed = False`), so old and new code read and wrote the same rows. No sync jobs, no dual writes.
-3. **Parity before cutover.** A harness compared the new backend's numbers with the legacy ones (valuations, KPIs, investor positions) and reported differences. Nothing switched over until it agreed.
-4. **Cutover by surface.** First the admin, then the investor platform, each on its own day, with one re-login for users and the password hashes carried over.
-5. **Move and switch off.** MySQL to Postgres, AWS to Railway and Vercel, and the old infrastructure torn down.
-
-## How it works
+The thing I was most scared of was a launch weekend: switch everything over on a Friday and find out on Monday that someone's investment shows the wrong amount. So the rule was that there would never be a big switch.
 
 <StranglerFig />
 
-The trick that made it safe is that there was only ever one database. The legacy app and the new backend were two views over the same tables. That meant I could ship the new backend to production while the old one was still serving traffic, compare answers on real data, and flip the frontends over one at a time. If something looked wrong, rolling back meant pointing a frontend at the old API again.
+In order, that meant:
 
-## The hard parts
+1. **New frontends first, on the old API.** People got the new admin and investor apps months before any backend changed, and I learned what every screen really needed by rebuilding it.
+2. **A new backend on the same tables.** The new Django project points at the existing database and doesn't own the schema (`managed = False`). Old and new code read and write the same rows, so there's nothing to sync.
+3. **Check the numbers before switching.** A small harness ran valuations, KPIs and investor positions through both systems and listed every difference.
+4. **Switch one app at a time.** The admin app first, since its users were the internal team and would tell me fast if something was off. The investor app about ten days later. Going back would have meant pointing the frontend at the old API again.
+5. **Then move house.** MySQL to Postgres, AWS to Railway and Vercel, and the old servers switched off.
 
-### Keeping two systems honest on one schema
+## Bits that were harder than they looked
 
-Mapping a new model layer onto a seven-year-old schema means inheriting its quirks without spreading them. I wrapped legacy shapes behind clean models where I could. For example, a single relationship model replaced four overlapping legacy tables. And I let the schema converge gradually: 154 tables became 101 by the end, and the migration history was squashed from 44 files to 14.
+**Sharing one schema between two codebases.** Every schema change had to keep the old app working too. I put clean models over the awkward legacy tables where I could, and changed the tables themselves slowly. By the end there were 101 tables instead of 154, and 14 migration files instead of 44.
 
-### Proving the numbers match
+**Agreeing on what "the same numbers" means.** The harness got to 111 of 112 KPIs matching. The last one was a change we made on purpose and wrote down before switching. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
 
-Money software needs the boring answer to "is it the same?". The parity harness ran the KPI and valuation logic through both systems and diffed the results. It reached 111 of 112 KPIs identical. The one remaining difference was an intentional change, documented before cutover. While I was in there, I replaced a valuation recompute that cascaded through saves (minutes per startup) with a batch snapshot engine: about 0.3 s per startup, and the whole portfolio in about 7 s.
+**The database move.** MySQL to Postgres was a separate step, not mixed in with any refactoring. I wrote a migration script that could be run again safely, practised it on copies of production until it was dull, and ran it for real once.
 
-### Changing the database engine without changing everything else
-
-Moving from MySQL to Postgres was its own project, deliberately kept apart from the refactors. It was an idempotent 27-step migration script, rehearsed on production snapshots until it was dull, and then run once, in about a day, with no re-run needed.
-
-### Going fast without going reckless
-
-Most of this was built by one or two engineers in about a year, with coding agents doing a lot of the typing. The guardrails made that safe: specs and plans before code, around 4,000 automated tests running in CI, per-pull-request preview environments seeded from production snapshots, and an automated review gate before merge.
+**Doing it with two people.** We used coding agents for a lot of the typing. To keep that safe there were written specs before code, around 4,000 tests running on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
 
 ## Numbers
 
-- Infra cost down roughly **95%** after the old cloud setup was retired.
-- **99.1%** KPI parity before cutover (111/112, with the one difference intentional).
-- **~450** active investors moved across with a single re-login.
-- **~4,000** tests, a 154 → 101 table schema, and portfolio revaluation in seconds instead of minutes.
+- Hosting costs down about **95%** after the old AWS setup was switched off.
+- **111 of 112** KPIs identical before the switch. The other one was intentional.
+- About **450** active investors moved over. They had to log in again once.
+- About **4,000** tests, and portfolio revaluation in seconds instead of minutes.
 
 ## Stack
 
-Django, Django REST Framework and GraphQL on PostgreSQL, with Celery for background work. Vue 3, Vite and Pinia on the frontends. Railway for the backend, Vercel for the apps, and GitHub Actions running the test suite and preview environments.
+Django, Django REST Framework and GraphQL on PostgreSQL, Celery for background jobs, and Vue 3 with Vite and Pinia for the apps. Railway runs the backend, Vercel runs the frontends, and GitHub Actions runs the tests and preview environments.

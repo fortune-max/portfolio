@@ -15,14 +15,13 @@ test('archive post page renders with meta line and origin note', async ({ page }
   await expect(page.locator('main article')).toContainText('Originally published on slaycode.wordpress.com');
 });
 
-test('current posts show a TL;DR before the body and code scrolls inside its box', async ({ page, request }) => {
+test('code in posts scrolls inside its box', async ({ page, request }) => {
   await page.goto('/blog');
   const current = page.locator('[data-current] li a');
   const n = await current.count();
   test.skip(n === 0, 'no current posts yet');
   const href = await current.first().getAttribute('href');
   await page.goto(href!);
-  await expect(page.locator('main [data-tldr]')).toBeVisible();
   const pre = page.locator('main article pre').first();
   if (await pre.count()) expect(await pre.evaluate((e) => getComputedStyle(e).overflowX)).toBe('auto');
 });

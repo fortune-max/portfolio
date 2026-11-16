@@ -4,7 +4,6 @@ import matter from 'gray-matter';
 
 const SLUGS = ['oneragtime-v2', 'mcp-server', 'ai-reports', 'thinclaw', 'cloudstation3'];
 const ONERAGTIME = ['oneragtime-v2', 'mcp-server', 'ai-reports'];
-const H2 = ['The problem', 'What I built', 'How it works', 'The hard parts', 'Numbers', 'Stack'];
 const SHOWCASE = 'https://github.com/fortune-max/thinclaw-showcase';
 
 const load = (slug: string) => {
@@ -24,16 +23,9 @@ describe('work content', () => {
 
   for (const slug of SLUGS) {
     describe(slug, () => {
-      it('has the six sections in order', () => {
-        const heads = [...load(slug).content.matchAll(/^## (.+)$/gm)].map((m) => m[1].trim());
-        expect(heads).toEqual(H2);
-      });
-      it('has 2–4 hard parts', () => {
-        const body = load(slug).content;
-        const hard = body.split('## The hard parts')[1].split('## Numbers')[0];
-        const n = (hard.match(/^### /gm) ?? []).length;
-        expect(n).toBeGreaterThanOrEqual(2);
-        expect(n).toBeLessThanOrEqual(4);
+      it('has at least three sections', () => {
+        const heads = [...load(slug).content.matchAll(/^## (.+)$/gm)];
+        expect(heads.length).toBeGreaterThanOrEqual(3);
       });
       it('has 2–4 metrics', () => {
         const m = load(slug).data.metrics;
@@ -45,6 +37,15 @@ describe('work content', () => {
       });
     });
   }
+
+  it('pages do not all share one template: no two have the same section headings', () => {
+    const shapes = SLUGS.map((s) => [...load(s).content.matchAll(/^## (.+)$/gm)].map((m) => m[1].trim()).join('|'));
+    expect(new Set(shapes).size).toBe(SLUGS.length);
+  });
+
+  it('only one product headline uses a strikethrough', () => {
+    expect(SLUGS.filter((s) => load(s).data.strike).length).toBeLessThanOrEqual(1);
+  });
 
   it('ThinClaw links only to the showcase repo', () => {
     const urls = load('thinclaw').raw.match(/https?:\/\/[^\s()\[\]"'>]+/g) ?? [];
