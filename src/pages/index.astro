@@ -8,10 +8,10 @@ import ProductSection from '../components/ProductSection.astro';
 import WritingList from '../components/WritingList.astro';
 import Awards from '../components/Awards.astro';
 import MoreRow from '../components/MoreRow.astro';
-import { sortByDateDesc, splitArchive, visiblePosts } from '../lib/posts';
+import { sortByDateDesc, splitArchive, visiblePosts, hideDrafts } from '../lib/posts';
 
 const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
-const posts = sortByDateDesc(splitArchive(visiblePosts(await getCollection('blog'), import.meta.env.PROD)).current);
+const posts = sortByDateDesc(splitArchive(visiblePosts(await getCollection('blog'), hideDrafts({ PROD: import.meta.env.PROD, VERCEL_ENV: process.env.VERCEL_ENV }))).current);
 // Products alternate light/dark after the dark hero; the section after them continues the pattern.
 const toneAt = (i: number): 'dark' | 'light' => (i % 2 === 0 ? 'light' : 'dark');
 const afterTone = toneAt(work.length);

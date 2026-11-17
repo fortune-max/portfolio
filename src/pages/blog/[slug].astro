@@ -1,10 +1,10 @@
 ---
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import ProseLayout from '../../layouts/ProseLayout.astro';
-import { visiblePosts, readingTime } from '../../lib/posts';
+import { visiblePosts, hideDrafts, readingTime } from '../../lib/posts';
 
 export async function getStaticPaths() {
-  const posts = visiblePosts(await getCollection('blog'), import.meta.env.PROD);
+  const posts = visiblePosts(await getCollection('blog'), hideDrafts({ PROD: import.meta.env.PROD, VERCEL_ENV: process.env.VERCEL_ENV }));
   return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 

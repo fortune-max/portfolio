@@ -2,9 +2,9 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MonoLabel from '../../components/MonoLabel.astro';
-import { sortByDateDesc, splitArchive, visiblePosts, readingTime } from '../../lib/posts';
+import { sortByDateDesc, splitArchive, visiblePosts, hideDrafts, readingTime } from '../../lib/posts';
 
-const { current, archive } = splitArchive(sortByDateDesc(visiblePosts(await getCollection('blog'), import.meta.env.PROD)));
+const { current, archive } = splitArchive(sortByDateDesc(visiblePosts(await getCollection('blog'), hideDrafts({ PROD: import.meta.env.PROD, VERCEL_ENV: process.env.VERCEL_ENV }))));
 const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 ---
 <BaseLayout title="Writing" description="Notes on rewrites, LLM tooling, compilers and the occasional hack, by Fortune Max-Eguakun.">

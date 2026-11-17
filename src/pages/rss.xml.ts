@@ -1,10 +1,10 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
-import { sortByDateDesc, splitArchive, visiblePosts } from '../lib/posts';
+import { sortByDateDesc, splitArchive, visiblePosts, hideDrafts } from '../lib/posts';
 
 export async function GET(context: APIContext) {
-  const posts = sortByDateDesc(splitArchive(visiblePosts(await getCollection('blog'), import.meta.env.PROD)).current);
+  const posts = sortByDateDesc(splitArchive(visiblePosts(await getCollection('blog'), hideDrafts({ PROD: import.meta.env.PROD, VERCEL_ENV: process.env.VERCEL_ENV }))).current);
   return rss({
     title: 'Fortune Max-Eguakun',
     description: 'Notes on rewrites, LLM tooling, compilers and the occasional hack.',

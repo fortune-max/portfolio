@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import matter from 'gray-matter';
 
-const POSTS = ['func-compiler-bugs', 'rewrite-without-big-bang', 'mcp-server-llms-dont-misuse'];
+const POSTS = ['func-compiler-bugs', 'rewrite-without-big-bang', 'mcp-server-llms-dont-misuse', 'shipping-with-previews-and-agents'];
 const load = (s: string) => {
   const raw = readFileSync(`src/content/blog/${s}.mdx`, 'utf8');
   return { raw, ...matter(raw) };

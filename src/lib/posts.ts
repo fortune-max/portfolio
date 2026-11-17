@@ -17,6 +17,11 @@ export function visiblePosts<T extends Draftable>(posts: T[], isProd: boolean): 
   return isProd ? posts.filter((p) => !p.data.draft) : posts;
 }
 
+/** Drafts stay off the live site but show on Vercel preview deploys, so they can be reviewed there. */
+export function hideDrafts(env: { PROD: boolean; VERCEL_ENV?: string }): boolean {
+  return env.PROD && env.VERCEL_ENV !== 'preview';
+}
+
 const WPM = 230;
 
 /** Whole minutes at 230 wpm, minimum 1, ignoring fenced code blocks. */
