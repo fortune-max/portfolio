@@ -1,10 +1,10 @@
 ---
-title: "Three FunC bug reports: one false alarm, two bounties, and a changed default"
+title: "Three FunC bug reports: one false alarm, $4,200 in bounties, and a changed default"
 description: Between 2022 and 2024 I sent three bug reports about TON's smart-contract compiler. The first was my own fault, the second paid out the next day, and the third took six months.
 pubDate: 2026-11-11
 ---
 
-In 2022 I spent a lot of evenings on TON smart-contract contests. That's how I ended up sending three bug reports about the FunC compiler over about 15 months. One was my fault, one paid 1,000 TON, and one paid 250 TON and changed a compiler default. Here's how each went.
+In 2022 I spent a lot of evenings on TON smart-contract contests. That's how I ended up sending three bug reports about the FunC compiler over about 15 months. One was my fault, one paid about $2,400, and one paid about $1,800 and changed a compiler default. Here's how each went.
 
 Quick background if you haven't used it: FunC is the language TON smart contracts are written in. It looks a bit like C, compiles to Fift assembly, and runs on the TON Virtual Machine, which is a stack machine. Your variables are really names for slots on a stack, and the compiler's job is to shuffle those slots so the code does what you wrote. When it shuffles wrong, nothing crashes. A variable just ends up holding the wrong value, which in a smart contract can mean real money.
 
@@ -46,7 +46,7 @@ The timeline I do know:
 
 - 28 Dec, 10:23: report sent
 - 28 Dec, 14:00: "Hi, we are checking it"
-- 29 Dec: fixed in the testnet branch, and a bounty of **1,000 TON** (about $2,400 at the time)
+- 29 Dec: fixed in the testnet branch, and a bounty of **about $2,400** (1,000 TON at the time)
 
 Less than a day and a half. The reason it was taken seriously is that skipped code in a contract fails silently. A skipped loop could be a skipped balance update or a skipped check, with no error anywhere.
 
@@ -89,7 +89,7 @@ Both reads succeed and return valid numbers, just the wrong ones, and nothing er
 
 This one took a while. They confirmed it after three weeks, then said they needed more time, then that they were preparing a bigger FunC update that would cover it. I followed up about once a month.
 
-After almost six months I got the full answer. The team already knew about the behaviour and had decided it wasn't serious enough to change. My report showed a case where it changed things "drastically and in unexpected way", and that was enough: `compute-asm-ltr` became **the default in FunC 0.5.0**, along with some other changes. The bounty was 250 TON, adjusted for the TON price when I reported it (I'd asked about that).
+After almost six months I got the full answer. The team already knew about the behaviour and had decided it wasn't serious enough to change. My report showed a case where it changed things "drastically and in unexpected way", and that was enough: `compute-asm-ltr` became **the default in FunC 0.5.0**, along with some other changes. The bounty was 250 TON, about $1,800 when it was paid, and sized with the TON price at the time I reported it in mind (I'd asked about that).
 
 It's the smaller of the two payouts, and the one I'm happiest about, because anyone writing FunC now gets the safer behaviour without ever reading my report.
 
