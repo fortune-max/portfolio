@@ -32,8 +32,8 @@ test('awards and more rows', async ({ page }) => {
   await page.goto('/');
   const awards = page.locator('[data-awards] li');
   await expect(awards).toHaveCount(6);
-  await expect(awards.nth(1)).toContainText('$1,800');
-  await expect(awards.first()).toContainText('$2,400');
+  await expect(awards.first()).toContainText('$1,800');
+  await expect(awards.nth(1)).toContainText('$2,400');
   await expect(page.locator('[data-more] li')).toHaveCount(4);
 });
 
