@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-test('about page shows the portrait and the Barcelona banner', async ({ page }) => {
+test('about page shows the portrait, the chess photo and the Barcelona banner', async ({ page }) => {
   await page.goto('/about');
   const imgs = page.locator('main img');
-  await expect(imgs).toHaveCount(2);
-  for (const i of [0, 1]) {
+  await expect(imgs).toHaveCount(3);
+  for (const i of [0, 1, 2]) {
     const img = imgs.nth(i);
     await img.scrollIntoViewIfNeeded();
     expect((await img.getAttribute('alt'))?.length ?? 0).toBeGreaterThan(10);

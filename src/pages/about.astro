@@ -4,6 +4,7 @@ import MonoLabel from '../components/MonoLabel.astro';
 import { Image } from 'astro:assets';
 import portrait from '../assets/photos/about-portrait.jpg';
 import barcelona from '../assets/photos/barcelona.jpg';
+import chess from '../assets/photos/chess.jpg';
 import '../styles/prose.css';
 ---
 <BaseLayout title="About" description="How Fortune Max-Eguakun got into building software, from PvP games in a school computer lab to running engineering at a VC platform.">
@@ -39,6 +40,10 @@ import '../styles/prose.css';
         </p>
 
         <h2>Engineering, then software</h2>
+        <figure class="side">
+          <Image src={chess} alt="Fortune smiling over a chess board at night, with the moon over the sea behind him" widths={[300, 600]} sizes="(max-width: 820px) 100vw, 300px" />
+          <figcaption>Chess by the sea.</figcaption>
+        </figure>
         <p>
           I did my bachelor's in mechanical engineering at the University of Benin. I already liked programming and
           figured an engineering degree would teach me things I wouldn't pick up on my own. My final-year project was a
@@ -109,4 +114,9 @@ import '../styles/prose.css';
   .banner { margin: 0 0 1.75rem; }
   .banner :global(img) { width: 100%; height: auto; border-radius: 6px; display: block; }
   .banner figcaption { font-size: var(--step--1); color: var(--muted); margin-top: .5rem; }
+  .side { float: right; width: 300px; margin: .25rem 0 1rem 2rem; }
+  .side :global(img) { width: 100%; height: auto; border-radius: 6px; display: block; }
+  .side figcaption { font-size: var(--step--1); color: var(--muted); margin-top: .5rem; }
+  .prose h2 { clear: both; }
+  @media (max-width: 820px) { .side { float: none; width: 100%; margin: 0 0 1.5rem; } }
 </style>
