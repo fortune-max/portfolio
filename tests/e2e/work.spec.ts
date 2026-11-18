@@ -15,7 +15,7 @@ for (const [slug, title] of Object.entries(PAGES)) {
     await expect(page.locator('main h1')).toHaveText(title);
     expect(await page.locator('main article h2').count()).toBeGreaterThanOrEqual(3);
     await expect(page.locator('main svg[role="img"]')).toHaveCount(1);
-    expect(await page.locator('main .pill').count()).toBeGreaterThan(0);
+    await expect(page.locator('main .stack')).toContainText('Built with');
     await expect(page.locator('main a[href="/#work"]').first()).toContainText('All work');
   });
 }

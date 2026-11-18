@@ -2,9 +2,9 @@
 import type { CollectionEntry } from 'astro:content';
 import Band from './Band.astro';
 import MonoLabel from './MonoLabel.astro';
-import Pill from './Pill.astro';
 import MetricsCard from './MetricsCard.astro';
 import Headline from './Headline.astro';
+import { builtWith } from '../lib/stack';
 
 interface Props { entry: CollectionEntry<'work'>; index: number; tone: 'dark' | 'light' }
 const { entry, index, tone } = Astro.props;
@@ -13,10 +13,10 @@ const d = entry.data;
 <Band tone={tone} data-product={entry.id}>
   <div class="wrap grid">
     <div>
-      <MonoLabel index={index} text={d.label} />
+      <MonoLabel text={d.label} />
       <h2 class="display h"><a href={`/work/${entry.id}`}><Headline text={d.headline} strike={d.strike} /></a></h2>
       <p class="summary">{d.summary}</p>
-      <ul class="pills">{d.stack.slice(0, 5).map((s) => <Pill text={s} />)}</ul>
+      <p class="stack">{builtWith(d.stack.slice(0, 5))}</p>
       <p class="mono more"><a href={`/work/${entry.id}`}>How I built it →</a></p>
     </div>
     <MetricsCard metrics={d.metrics} />
@@ -28,7 +28,7 @@ const d = entry.data;
   .h { font-size: var(--step-3); margin: 0 0 1rem; }
   .h a { text-decoration: none; }
   .summary { max-width: 36rem; margin: 0 0 1.25rem; color: color-mix(in srgb, var(--fg) 85%, var(--bg)); }
-  .pills { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0; margin: 0 0 1.25rem; }
+  .stack { margin: 0 0 1.25rem; color: var(--muted); font-size: var(--step--1, .9rem); }
   .more { margin: 0; letter-spacing: .08em; }
   .more a { color: var(--accent); }
 </style>
