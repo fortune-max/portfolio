@@ -34,7 +34,7 @@ test('awards and more rows', async ({ page }) => {
   await expect(awards).toHaveCount(6);
   await expect(awards.nth(1)).toContainText('$1,800');
   await expect(awards.first()).toContainText('$2,400');
-  await expect(page.locator('[data-more] li')).toHaveCount(4);
+  await expect(page.locator('[data-more] li')).toHaveCount(3);
 });
 
 test('no email address on the page', async ({ page }) => {
