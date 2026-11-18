@@ -45,7 +45,7 @@ For money, "it looks right" isn't good enough. I ran the ETL on my machine again
 
 By then the new backend and the admin app lived in one repository, so the investor-facing app went on top of it last, with everything it needed already in place. About seven months in, we switched over: the ETL ran for real once, the apps pointed at the new backend, and the old AWS setup was switched off afterwards. Hosting costs dropped by about 95%.
 
-Investors kept their passwords, because Django could already check the old hashes, and we told them in advance they'd need to log in once more because the login tokens changed format. Migrations are never perfect, and this one went through with barely any complaints. Most of what we missed were small things, like a Slack notification the old system sent that nobody had written down.
+Investors kept their passwords, because Django could already check the old hashes, and we told them in advance they'd need to log in once more because the login tokens changed format. Most of what we missed were small things, like a Slack notification the old system sent that nobody had written down.
 
 Once every environment was migrated, we deleted the ETL command. Keeping a 2,700-line script for a database that no longer exists only invites someone to run it.
 
