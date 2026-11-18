@@ -4,7 +4,7 @@ order: 1
 label: OneRagtime v2
 headline: Rewrite a live platform. No big bang.
 strike: big bang
-summary: I proposed and led the rewrite of a live VC platform, and wrote about 85% of the code at switch-over. We moved it over one piece at a time, investors barely noticed, and hosting got about 95% cheaper.
+summary: I proposed and led the rewrite of a live VC platform, and wrote about 85% of the code at switch-over. We moved it over one piece at a time, and hosting got about 95% cheaper.
 role: Proposed, led and built
 period: Nov 2025 – Oct 2026
 stack: [Django, PostgreSQL, Vue 3, Vite, Celery, Railway, Vercel]
@@ -30,7 +30,7 @@ The thing I was most scared of was a launch weekend: switch everything over on a
 
 <StranglerFig />
 
-**First, a new UI next to the old one.** I rebuilt the back-office screens to be clearer and more modern, with numbers formatted properly for a mostly French team (they don't write numbers the way I do). The new version lived on its own domain and talked to the same old backend, while the old version stayed up on another. People could use whichever they liked. Some pages were a bit slower at first, but that wasn't the point yet. Over a few months more and more of the team stopped opening the old one, until nobody did.
+**First, a new UI next to the old one.** I rebuilt the back-office screens to be clearer and more modern, with numbers formatted the way a mostly French team expects. The new version lived on its own domain and talked to the same old backend, while the old version stayed up on another. People could use whichever they liked. Some pages were a bit slower at first, but that wasn't the point yet. Over a few months more and more of the team stopped opening the old one, until nobody did.
 
 **Then, a new backend and schema.** I redesigned the schema based on what I now knew about how the product was actually used: removing tables that held a second copy of the truth, consolidating fields and dropping ones nothing used. I wrote an ETL script that takes a backup of the old database and produces a fully populated database in the new schema. I ran it on my machine against production copies, pointed a second version of the new UI at the result, and checked that everything matched the old system. That part took about three months.
 

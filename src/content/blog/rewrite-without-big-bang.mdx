@@ -39,20 +39,7 @@ It ran twice: once before the steps that create rows with automatic ids, and onc
 
 ## Step 3: check the numbers before anything switches
 
-For money, "it looks right" isn't good enough. Alongside the ETL, a small script ran the same calculations through the old system and the new database and listed every difference: portfolio KPIs, valuations, investor positions.
-
-```python
-def check_parity(metric: str, ids: list[int]) -> list[Mismatch]:
-    mismatches = []
-    for pk in ids:
-        old = legacy_client.get_metric(metric, pk)   # old system's API
-        new = compute_metric(metric, pk)              # new backend, new database
-        if not close_enough(old, new):
-            mismatches.append(Mismatch(metric, pk, old, new))
-    return mismatches
-```
-
-There's nothing clever in it. It was useful because we ran it after every ETL change, and every difference it found either got fixed or got written down as a change we meant to make.
+For money, "it looks right" isn't good enough. I ran the ETL on my machine against copies of production, pointed a second copy of the new admin app at the result, and compared it with the old system: portfolio KPIs, valuations, investor positions. Every difference either got fixed in the script or written down as a change we meant to make, and the script was run again after every fix.
 
 ## Step 4: the investor app, then the switch
 
