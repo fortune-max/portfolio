@@ -30,13 +30,13 @@ The thing I was most scared of was a launch weekend: switch everything over on a
 
 <StranglerFig />
 
-**First, a new UI next to the old one.** I rebuilt the back-office screens to be clearer and more modern, with numbers formatted the way a mostly French team expects. The new version lived on its own domain and talked to the same old backend, while the old version stayed up on another. People could use whichever they liked. Some pages were a bit slower at first, but that wasn't the point yet. Over a few months more and more of the team stopped opening the old one, until nobody did.
+**First, a new UI next to the old one.** I rebuilt the back-office screens to be clearer and more modern, with numbers formatted the way a mostly French team expects. The new version lived on its own domain and talked to the same old backend, while the old version stayed up on another. People could use whichever they liked. Over a few months more and more of the team stopped opening the old one, until nobody did.
 
 **Then, a new backend and schema.** I redesigned the schema based on what I now knew about how the product was actually used: removing tables that held a second copy of the truth, consolidating fields and dropping ones nothing used. I wrote an ETL script that takes a backup of the old database and produces a fully populated database in the new schema. I ran it on my machine against production copies, pointed a second version of the new UI at the result, and checked that everything matched the old system. That part took about three months.
 
 **Last, the investor app.** By then the new backend and the internal app shared one repository, so adding the investor-facing platform on top was much simpler. All of it, everyone's context, conventions and history, was in one place.
 
-About seven months in, we switched over completely. Migrations are never perfect, but this one went through with barely any complaints. Most of what we missed were small things, like a Slack notification the old system sent and nobody had written down.
+About seven months in, we switched over completely.
 
 I started this with Cursor and moved more and more to Claude as it went. Having everything in one clean repository helped the agents a lot, and the more I corrected them, the better they got at following the patterns. It's the biggest and hardest build I've done so far.
 
@@ -44,22 +44,22 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 **The schema.** Working out which of 154 tables were still the source of truth for something took most of the thinking. By the end there were 101 tables, and 14 migration files instead of 44.
 
-**Agreeing on what "the same numbers" means.** Before each part moved over, a script ran the same portfolio calculations through the old and new systems and listed every difference, and we went through them until none were left that we hadn't chosen on purpose. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
+**Agreeing on what "the same numbers" means.** Before each part moved over, I compared the portfolio numbers in the old and new systems and went through every difference until none were left that we hadn't chosen on purpose. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
 
 **The database move.** Going from MySQL to Postgres at the same time meant the ETL script had to be safe to run again and again. I practised it on copies of production until it was dull, and then ran it for real once.
 
 **Background work.** A lot of the platform happens outside a request: CRM and mailing-list syncs, daily emails, Slack alerts, document indexing, scheduled checks. That's about 70 Celery tasks on Redis. Two rules saved us the most trouble. Tasks are queued only after the database transaction commits, so a worker never looks for a row that doesn't exist yet. And anything that runs less often than hourly has to be a clock-time schedule, because a plain interval restarts its countdown every time the service redeploys, and some jobs would otherwise never run. A startup check refuses a schedule that breaks that rule.
 
-**Knowing when something breaks.** With one or two engineers, nobody is watching dashboards, so the platform has to tell me. Every request is logged before the view runs, so even a crash leaves a record, with personal data redacted and a link to its Sentry issue. Server errors raise one Slack alert per problem, not one per request. The failures that hurt most were the quiet ones: an email provider ran out of credits, the code logged the error and carried on, and nothing alerted anywhere. Since then, errors that an integration swallows on purpose are sent to Sentry explicitly.
+**Knowing when something breaks.** With one or two engineers, nobody is watching dashboards, so the platform has to tell me. Every request is logged before the view runs, so even a crash leaves a record, with personal data redacted and a link to its Sentry issue. Server errors raise one Slack alert per problem, not one per request. It also alerts on failures that don't crash anything, such as a third-party quota running out.
 
-**Moving the CRM in-house.** In 2026 we moved investor relations and dealflow off Pipedrive and into the platform. I led the data side. The first import had silently dropped notes and activities, so I recovered more than 2,500 of them. Two Pipedrive accounts were overwriting each other's records because their ids shared one key space. And re-running the import kept creating duplicate companies, until a small alias map, checked with the team, pointed known variants at the existing record.
+**Moving the CRM in-house.** In 2026 we moved investor relations and dealflow off Pipedrive and into the platform. I led the data side. The first import had silently dropped notes and activities, so I recovered more than 2,500 of them. Records from our two Pipedrive accounts needed their own ids, because the two accounts' ids overlapped. And re-running the import kept creating duplicate companies, until a small alias map, checked with the team, pointed known variants at the existing record.
 
 **Keeping agents honest.** To trust that much agent-written code there were written specs before code, tests on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
 
 ## Numbers
 
 - Hosting costs down about **95%** after the old AWS setup was switched off.
-- About **450** active investors moved over. They had to log in again once.
+- About **450** active investors moved over.
 - **154 → 101** tables.
 - Portfolio revaluation in about **7 seconds** instead of minutes per startup.
 

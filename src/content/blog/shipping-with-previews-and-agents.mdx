@@ -67,7 +67,7 @@ None of this worked the first time, and the failures were more useful than the s
 
 The weekly staging refresh relied on a scheduled GitHub workflow, which GitHub runs on a best-effort basis. Twice it started six to eight hours late, which left staging on week-old code over a fresh database for most of a day. The fix was to trigger the code sync from the database restore, so the order is built in rather than two clocks agreeing.
 
-The refresh also reported its health to a heartbeat endpoint, and for three weeks that report was silently failing: the container image had no CA certificates, so every HTTPS call to the heartbeat and to Slack failed quietly, while the backup upload worked because its tool ships its own certificates. An alert that can fail without anyone noticing needs its own proof that it's alive.
+The refresh also reported its health to a heartbeat endpoint, and that report was failing silently: the container image had no CA certificates, so every HTTPS call to the heartbeat and to Slack failed quietly, while the backup upload worked because its tool ships its own certificates. An alert that can fail without anyone noticing needs its own proof that it's alive.
 
 ## Why it works
 

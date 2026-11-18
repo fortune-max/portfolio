@@ -20,7 +20,7 @@ The old database had grown over eight years of different people's ideas: tables 
 
 The new schema was filled by an ETL command that read the old MySQL database and wrote the new Postgres one in about 27 ordered steps: reference data, users, KYC, startups, investments, relationships, attachments and so on. I ran it on my machine against copies of production, pointed a second copy of the new UI at the result, and compared it with the old system. That loop took about three months and the script ran many times, so it had to be safe to run again and again.
 
-Two Postgres details cost me the most time. Clearing tables with `TRUNCATE ... CASCADE` follows foreign keys further than you expect: truncating the relationships table chained through users and wiped investments. A plain `DELETE FROM` per table, in the right order, did what I meant. And when you insert rows with explicit ids, Postgres doesn't move the id sequence along, so the next normal insert collides with an existing id. The fix was to reset every sequence after loading:
+Two Postgres details cost me the most time. Clearing tables with `TRUNCATE ... CASCADE` follows foreign keys further than you expect: on a local copy, truncating the relationships table chained through users and emptied investments. A plain `DELETE FROM` per table, in the right order, did what I meant. And when you insert rows with explicit ids, Postgres doesn't move the id sequence along, so the next normal insert collides with an existing id. The fix was to reset every sequence after loading:
 
 ```python
 def sync_sequences(cursor):
@@ -45,8 +45,6 @@ For money, "it looks right" isn't good enough. I ran the ETL on my machine again
 
 By then the new backend and the admin app lived in one repository, so the investor-facing app went on top of it last, with everything it needed already in place. About seven months in, we switched over: the ETL ran for real once, the apps pointed at the new backend, and the old AWS setup was switched off afterwards. Hosting costs dropped by about 95%.
 
-Investors kept their passwords, because Django could already check the old hashes, and we told them in advance they'd need to log in once more because the login tokens changed format. Most of what we missed were small things, like a Slack notification the old system sent that nobody had written down.
-
 Once every environment was migrated, we deleted the ETL command. Keeping a 2,700-line script for a database that no longer exists only invites someone to run it.
 
 ## How two people managed it
@@ -55,6 +53,6 @@ A lot of the typing was done by coding agents, which only works with some struct
 
 ## What I'd do differently
 
-I'd write the comparison script on day one, against the old system alone. It would have doubled as a description of what "correct" meant before I started changing anything.
+On day one, I'd write a script that records the key numbers from the old system alone. It would have doubled as a description of what "correct" meant before I started changing anything.
 
 I'd also turn the switch-over checklist into a script with a dry-run mode. The switch went fine, but the checklist lived in a document, and the practice runs and the real run should have been the same command.
