@@ -50,6 +50,10 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 **Background work.** A lot of the platform happens outside a request: CRM and mailing-list syncs, daily emails, Slack alerts, document indexing, scheduled checks. That's about 70 Celery tasks on Redis. Two rules saved us the most trouble. Tasks are queued only after the database transaction commits, so a worker never looks for a row that doesn't exist yet. And anything that runs less often than hourly has to be a clock-time schedule, because a plain interval restarts its countdown every time the service redeploys, and some jobs would otherwise never run. A startup check refuses a schedule that breaks that rule.
 
+**Knowing when something breaks.** With one or two engineers, nobody is watching dashboards, so the platform has to tell me. Every request is logged before the view runs, so even a crash leaves a record, with personal data redacted and a link to its Sentry issue. Server errors raise one Slack alert per problem, not one per request. The failures that hurt most were the quiet ones: an email provider ran out of credits, the code logged the error and carried on, and nothing alerted anywhere. Since then, errors that an integration swallows on purpose are sent to Sentry explicitly.
+
+**Moving the CRM in-house.** In 2026 we moved investor relations and dealflow off Pipedrive and into the platform. I led the data side. The first import had silently dropped notes and activities, so I recovered more than 2,500 of them. Two Pipedrive accounts were overwriting each other's records because their ids shared one key space. And re-running the import kept creating duplicate companies, until a small alias map, checked with the team, pointed known variants at the existing record.
+
 **Keeping agents honest.** To trust that much agent-written code there were written specs before code, tests on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
 
 ## Numbers
