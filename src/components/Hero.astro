@@ -1,26 +1,15 @@
 ---
-import { Image } from 'astro:assets';
-import avatar from '../assets/photos/avatar.jpg';
 ---
 <section class="hero tone-dark">
-  <div class="wrap grid">
-    <div>
-      <h1 class="mono name">Fortune Max-Eguakun</h1>
-      <p class="display headline" data-hero-headline>I make messy, live systems <em>boring to run</em>.</p>
-      <p class="lede">Senior full-stack engineer in Barcelona. I've been building things since I was 14, starting with games for my friends in the school computer lab. These days it's the platform about 450 investors use to back startups. <a href="/about">More about me</a>.</p>
-      <p class="mono cta"><a href="#work">See what I've shipped ↓</a> <a href="/contact">Say hi ↗</a></p>
-    </div>
-    <Image class="avatar" src={avatar} alt="Fortune Max-Eguakun" widths={[240, 480]} sizes="240px" loading="eager" data-hero-avatar />
+  <div class="wrap">
+    <h1 class="mono name">Fortune Max-Eguakun</h1>
+    <p class="display headline" data-hero-headline>I make messy, live systems <em>boring to run</em>.</p>
+    <p class="lede">Senior full-stack engineer in Barcelona. I've been building things since I was 14, starting with games for my friends in the school computer lab. These days it's the platform about 450 investors use to back startups. <a href="/about">More about me</a>.</p>
+    <p class="mono cta"><a href="#work">See what I've shipped ↓</a> <a href="/contact">Say hi ↗</a></p>
   </div>
 </section>
 <style>
   .hero { background: var(--bg); color: var(--fg); padding-block: clamp(2.5rem, 7vw, 6rem) clamp(3rem, 8vw, 7rem); }
-  .grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3rem; align-items: start; }
-  .avatar { width: 240px; height: 240px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent); margin-top: 2.5rem; }
-  @media (max-width: 820px) {
-    .grid { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
-    .avatar { order: -1; width: 120px; height: 120px; margin-top: 0; border-width: 3px; }
-  }
   .name { margin: 0 0 1.5rem; font-size: var(--step--1); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
   .headline { font-size: var(--step-4); margin: 0 0 1.5rem; max-width: 14ch; }
   em { font-style: normal; color: var(--accent); }
