@@ -68,3 +68,10 @@ test('home uses the slogan once and at most one strikethrough', async ({ page })
   expect(await page.locator('main s').count()).toBeLessThanOrEqual(1);
 });
 
+test('hero shows the at-work photo with alt text', async ({ page }) => {
+  await page.goto('/');
+  const img = page.locator('[data-hero-photo]');
+  await expect(img).toBeVisible();
+  expect((await img.getAttribute('alt'))?.length ?? 0).toBeGreaterThan(10);
+  await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+});
