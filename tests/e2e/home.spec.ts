@@ -67,3 +67,11 @@ test('home uses the slogan once and at most one strikethrough', async ({ page })
   expect(text.match(/boring to run/gi)?.length ?? 0).toBe(1);
   expect(await page.locator('main s').count()).toBeLessThanOrEqual(1);
 });
+
+test('hero shows the avatar photo with alt text', async ({ page }) => {
+  await page.goto('/');
+  const img = page.locator('[data-hero-avatar]');
+  await expect(img).toBeVisible();
+  await expect(img).toHaveAttribute('alt', 'Fortune Max-Eguakun');
+  expect(await img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+});

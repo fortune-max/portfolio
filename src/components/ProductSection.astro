@@ -7,7 +7,7 @@ import Headline from './Headline.astro';
 import { builtWith } from '../lib/stack';
 
 interface Props { entry: CollectionEntry<'work'>; index: number; tone: 'dark' | 'light' }
-const { entry, index, tone } = Astro.props;
+const { entry, tone } = Astro.props;
 const d = entry.data;
 ---
 <Band tone={tone} data-product={entry.id}>

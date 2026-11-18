@@ -1,19 +1,29 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MonoLabel from '../components/MonoLabel.astro';
+import { Image } from 'astro:assets';
+import portrait from '../assets/photos/about-portrait.jpg';
+import barcelona from '../assets/photos/barcelona.jpg';
 import '../styles/prose.css';
 ---
 <BaseLayout title="About" description="How Fortune Max-Eguakun got into building software, from PvP games in a school computer lab to running engineering at a VC platform.">
   <section class="tone-dark page">
     <div class="wrap">
-      <MonoLabel text="About" />
-      <h1 class="display title">I've been building things since I was 14.</h1>
+      <div class="top">
+        <div>
+          <MonoLabel text="About" />
+          <h1 class="display title">I've been building things since I was 14.</h1>
+          <div class="prose intro">
+            <p>
+            It started with small PvP games in the school computer lab. My friends would suggest characters, I'd make them,
+            and they'd use them as their avatars when we fought. It was just a small thing we did. From there I moved on to
+            modding GTA San Andreas, changing the gameplay, the maps and how things behaved.
+            </p>
+          </div>
+        </div>
+        <Image class="portrait" src={portrait} alt="Fortune standing in a doorway, in a white T-shirt" widths={[320, 640]} sizes="(max-width: 820px) 70vw, 320px" loading="eager" />
+      </div>
       <div class="prose">
-        <p>
-          It started with small PvP games in the school computer lab. My friends would suggest characters, I'd make them,
-          and they'd use them as their avatars when we fought. It was just a small thing we did. From there I moved on to
-          modding GTA San Andreas, changing the gameplay, the maps and how things behaved.
-        </p>
         <p>
           At some point I decided to learn it properly. Java came first, for small Android apps, then Python for
           scripting. Android got me into Linux, since that's what's underneath, and Linux got me into rooting phones and
@@ -60,6 +70,10 @@ import '../styles/prose.css';
         </p>
 
         <h2>Master's, and OneRagtime</h2>
+        <figure class="banner">
+          <Image src={barcelona} alt="Fortune on a rooftop in Barcelona, with the Sagrada Família behind him" widths={[720, 1440]} sizes="(max-width: 820px) 100vw, 720px" />
+          <figcaption>Barcelona, where I've lived since starting my master's.</figcaption>
+        </figure>
         <p>
           For my master's at Harbour.Space in Barcelona I picked front-end engineering because it was the side I knew
           least. I'd always built backends and simple UIs. The degree showed me how much goes into a good interface:
@@ -88,5 +102,11 @@ import '../styles/prose.css';
 </BaseLayout>
 <style>
   .page { background: var(--bg); color: var(--fg); padding-block: clamp(2.5rem, 6vw, 5rem) 5rem; }
-  .title { font-size: var(--step-4); margin: 0 0 2.5rem; max-width: 16ch; }
+  .title { font-size: var(--step-4); margin: 0 0 2rem; max-width: 16ch; }
+  .top { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 3rem; align-items: start; margin-bottom: 1rem; }
+  .portrait { width: 100%; height: auto; border-radius: 6px; }
+  @media (max-width: 820px) { .top { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; } .portrait { max-width: 360px; } }
+  .banner { margin: 0 0 1.75rem; }
+  .banner :global(img) { width: 100%; height: auto; border-radius: 6px; display: block; }
+  .banner figcaption { font-size: var(--step--1); color: var(--muted); margin-top: .5rem; }
 </style>
