@@ -1,75 +1,73 @@
 ---
-title: Rewriting a live fintech platform without a launch day
-description: How we replaced a seven-year-old VC platform one piece at a time, with one shared database, a check that the numbers still matched, and no big switch-over weekend.
+title: Rewriting a live fintech platform one piece at a time
+description: How we replaced a seven-year-old VC platform in stages, with a new UI first, a new schema filled by a re-runnable ETL, and the numbers checked against the old system before anything switched.
 pubDate: 2026-11-04
 ---
 
-Between late 2025 and autumn 2026 I led the rewrite of the platform I work on: the system investors use to put money into startups, and that the back office uses for onboarding, signatures, valuations and quarterly reports. For most of it we were two engineers, down from six when I joined. I proposed it, planned it and wrote most of the code.
+Between late 2025 and mid-2026 I led the rewrite of the platform I work on: the system investors use to put money into startups, and that the back office uses for onboarding, signatures, valuations and quarterly reports. For most of it we were two engineers, down from six when I joined. I proposed it, planned it and wrote most of the code.
 
-The one thing I didn't want was a launch day: build the new system for a year, switch everything over on a Friday, and spend Monday finding out which investor's numbers are wrong. This post is about how we avoided that. It's the strangler-fig pattern, nothing new, but most write-ups I'd read stop before the boring details, so here are ours.
+What I wanted to avoid was building a new system for a year, switching everything over on one Friday, and spending Monday finding out which investor's numbers were wrong. So we moved it over in stages, and each stage had to be useful on its own.
 
-## One database, two apps
+## Step 1: a new UI on the old backend
 
-Most rewrites start a new system with a new database, and then need a migration, a sync job, and a weekend of hoping the two agree. We never had a second database.
+The first thing people saw was a new admin app. It lived on its own domain, talked to the old backend, and the old version stayed up on another domain, so people could use whichever they liked. Most of the team is French, so I also made sure numbers were formatted the way they expect.
 
-The new backend is a fresh Django project pointed at the same tables as the old app. Django lets a model describe a table it doesn't own:
+Over a few months, fewer and fewer people opened the old one, until nobody did. That got the team a better interface early, and it meant I learned what every screen really needed by rebuilding it, not by reading old code. It also meant that when the new backend was ready, the frontend mostly needed a different base URL.
+
+## Step 2: a new schema, filled by a script
+
+The old database had grown over seven years of different people's ideas: tables that held a second copy of the truth, fields nothing used, four overlapping tables describing who is connected to whom. I redesigned the schema around how the product was actually used, and it went from 154 tables to 101. The four relationship tables became one, some many-to-many tables became JSON lists, and document files moved to one model with named slots.
+
+The new schema was filled by an ETL command that read the old MySQL database and wrote the new Postgres one in about 27 ordered steps: reference data, users, KYC, startups, investments, relationships, attachments and so on. I ran it on my machine against copies of production, pointed a second copy of the new UI at the result, and compared it with the old system. That loop took about three months and the script ran many times, so it had to be safe to run again and again.
+
+Two Postgres details cost me the most time. Clearing tables with `TRUNCATE ... CASCADE` follows foreign keys further than you expect: truncating the relationships table chained through users and wiped investments. A plain `DELETE FROM` per table, in the right order, did what I meant. And when you insert rows with explicit ids, Postgres doesn't move the id sequence along, so the next normal insert collides with an existing id. The fix was to reset every sequence after loading:
 
 ```python
-class Investment(models.Model):
-    investor = models.ForeignKey("people.Investor", on_delete=models.PROTECT, db_column="investor_id")
-    amount = models.DecimalField(max_digits=14, decimal_places=2)
-    signed_at = models.DateTimeField(null=True)
-
-    class Meta:
-        managed = False          # Django won't create, change or drop this table
-        db_table = "core_investment"
+def sync_sequences(cursor):
+    cursor.execute(
+        "SELECT table_name FROM information_schema.columns "
+        "WHERE table_schema = 'public' AND column_name = 'id'"
+    )
+    for (table,) in cursor.fetchall():
+        cursor.execute(
+            f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+            f"COALESCE((SELECT MAX(id) FROM {table}), 1))"
+        )
 ```
 
-With `managed = False` the old app keeps owning the schema, and the new code just reads and writes the same rows. There was never a question of which copy was right, because there was only one copy.
-
-The cost is that you inherit every odd column name and table split from seven years of changes. I hid those behind cleaner models and APIs where I could, and only changed the tables themselves slowly, because the old app had to keep working after every change.
-
-## Step 1: new frontends on the old API
-
-The first thing people saw was a new admin app, still talking to the old backend. It lived on its own domain, with the old version still up on another, and people could use whichever they liked. Most of the team is French, so I also made sure numbers were formatted the way they expect. Over a few months fewer and fewer people opened the old one, until nobody did. That got users a better interface months earlier, and it meant I learned what every screen really needed by rebuilding it, not by reading old code. When the new backend was ready, the frontends only needed a different base URL.
-
-## Step 2: a new backend on the same tables
-
-Then I built the new backend underneath. Over the year the schema went from 154 tables to 101. For example, four overlapping legacy tables about who is connected to whom became one relationship model. Every one of those changes was a migration that the old app had to survive, since both were running at the same time.
+It ran twice: once before the steps that create rows with automatic ids, and once at the end.
 
 ## Step 3: check the numbers before anything switches
 
-For money, "it looks right" isn't good enough. Before any part moved over, a small script ran the same calculations through both systems and listed the differences: portfolio KPIs, valuations, investor positions.
+For money, "it looks right" isn't good enough. Alongside the ETL, a small script ran the same calculations through the old system and the new database and listed every difference: portfolio KPIs, valuations, investor positions.
 
 ```python
 def check_parity(metric: str, ids: list[int]) -> list[Mismatch]:
     mismatches = []
     for pk in ids:
-        old = legacy_client.get_metric(metric, pk)   # old API
-        new = compute_metric(metric, pk)              # new backend, same database
+        old = legacy_client.get_metric(metric, pk)   # old system's API
+        new = compute_metric(metric, pk)              # new backend, new database
         if not close_enough(old, new):
             mismatches.append(Mismatch(metric, pk, old, new))
     return mismatches
 ```
 
-There's nothing clever in it. It was useful because we ran it all the time, and every difference it found either got fixed or got written down as a change we meant to make.
+There's nothing clever in it. It was useful because we ran it after every ETL change, and every difference it found either got fixed or got written down as a change we meant to make.
 
-## Step 4: switch one app at a time
+## Step 4: the investor app, then the switch
 
-The admin app went first, because its users were the internal team and would tell me quickly if something looked off. The investor app followed about ten days later. Each switch was mostly a config change, and going back would have been the same change in reverse.
+By then the new backend and the admin app lived in one repository, so the investor-facing app went on top of it last, with everything it needed already in place. About seven months in, we switched over: the ETL ran for real once, the apps pointed at the new backend, and the old AWS setup was switched off afterwards. Hosting costs dropped by about 95%.
 
-Two small things kept investors from noticing much. We kept the existing password hashes, which Django already knew how to check, so nobody had to reset a password. And we told people in advance that they'd need to log in again once, because the login tokens changed format.
+Investors kept their passwords, because Django could already check the old hashes, and we told them in advance they'd need to log in once more because the login tokens changed format. Migrations are never perfect, and this one went through with barely any complaints. Most of what we missed were small things, like a Slack notification the old system sent that nobody had written down.
 
-## Step 5: move, then switch off
-
-Only after both apps were running on the new backend did I touch hosting. Moving from MySQL to Postgres was its own step, kept separate from any code changes. I wrote a migration script that could safely be run more than once, practised it on copies of production until it was dull, and then ran it for real once. After that the old AWS setup was switched off, and hosting costs dropped by about 95%.
+Once every environment was migrated, we deleted the ETL command. Keeping a 2,700-line script for a database that no longer exists only invites someone to run it.
 
 ## How two people managed it
 
-A lot of the typing was done by coding agents, which only works with some structure around it. Every bigger change started as a written spec and a step-by-step plan. The tests ran on every pull request. Each pull request got its own preview environment with a copy of production data, so reviewing meant clicking a link. And nothing merged without an automated review on top of ours.
+A lot of the typing was done by coding agents, which only works with some structure around it. Every bigger change started as a written spec and a plan, the tests ran on every pull request, each pull request got a preview environment with a copy of production data, and nothing merged without an automated review on top of ours. Having everything in one repository helped the agents a lot.
 
 ## What I'd do differently
 
-I'd write the parity script on day one, against the old API alone. It would have doubled as a description of what "correct" meant before I started changing anything.
+I'd write the comparison script on day one, against the old system alone. It would have doubled as a description of what "correct" meant before I started changing anything.
 
-I'd also turn the switch-over checklist into a script with a dry-run mode. The switches went fine, but the checklist lived in a document, and the practice runs and the real run should have been the same command.
+I'd also turn the switch-over checklist into a script with a dry-run mode. The switch went fine, but the checklist lived in a document, and the practice runs and the real run should have been the same command.
