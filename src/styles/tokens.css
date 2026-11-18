@@ -1,0 +1,35 @@
+:root {
+  --ink: #0d0f0e;
+  --paper: #f4f4f0;
+  --accent-dark: #b6f23a; /* accent on dark bands */
+  --accent-light: #3c7a00; /* accent on light bands (AA on --paper) */
+
+  /* active band colours; Band.astro swaps these */
+  --bg: var(--ink);
+  --fg: var(--paper);
+  --accent: var(--accent-dark);
+  --muted: color-mix(in srgb, var(--fg) 68%, var(--bg));
+  --rule: color-mix(in srgb, var(--fg) 18%, var(--bg));
+
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --step--1: 0.8125rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);
+  --step-3: clamp(2rem, 1.4rem + 2.8vw, 3.5rem);
+  --step-4: clamp(2.5rem, 1.6rem + 4.4vw, 5rem);
+
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --max: 72rem;
+}
+
+/* --muted and --rule are re-declared per tone: custom properties resolve where they're declared,
+   so a :root-only definition would leak dark-band greys into light bands. */
+.tone-dark, .tone-light {
+  --muted: color-mix(in srgb, var(--fg) 68%, var(--bg));
+  --rule: color-mix(in srgb, var(--fg) 18%, var(--bg));
+}
+.tone-dark { --bg: var(--ink); --fg: var(--paper); --accent: var(--accent-dark); }
+.tone-light { --bg: var(--paper); --fg: var(--ink); --accent: var(--accent-light); }

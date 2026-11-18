@@ -1,0 +1,47 @@
+---
+title: AI reporting pipeline
+order: 3
+label: AI reports
+headline: Quarterly reports drafted by an LLM and checked by a person.
+summary: A pipeline that drafts our quarterly portfolio reports and cites the slide or page behind every figure. Analysts went from about four hours per report to a 10–15 minute review.
+role: Designed and built
+period: 2025 – 2026
+stack: [Python, Django, Pydantic, Gemini, Celery, Notion API]
+metrics:
+  - { label: time per report, value: "4 h → 15 min" }
+  - { label: analyst hours saved, value: "~100 / quarter" }
+  - { label: reports drafted, value: "almost all, since Q3 2025" }
+---
+import ReportPipeline from '../../components/diagrams/ReportPipeline.astro';
+
+## Where it came from
+
+It started with pitch decks. Startups applying to raise money send a deck, and every deck puts the important things in a different place. When structured output arrived in the OpenAI API, I built a tool that pulls out what the investment team needs to decide quickly: founders, location, product, business model, go-to-market, competitors, sector, stage and how much they're raising. The team could skim that instead of the whole deck. Reports were the next obvious step.
+
+## The old way
+
+Every quarter a VC firm writes its investors a short report on each company in the portfolio: revenue, burn, runway, headcount, whatever else that company tracks, and a few lines on how it's going. The raw material is whatever the founders send: decks, spreadsheets, emails, all in different shapes, while the report has to come out in our own standard format.
+
+An analyst read each one, found the numbers, compared them with last quarter and wrote it up. That took about four hours per company, for every company, every quarter.
+
+## What changed
+
+Since Q3 2025 a pipeline writes the first draft of almost every report, and the analyst checks it instead of writing it. A check takes 10–15 minutes, so the team gets back roughly 100 hours a quarter.
+
+The part I cared about most was trust. An LLM will read a deck and give you a confident summary, and in a report to investors a confident wrong number is worse than a missing one. So every figure in a draft has to say where it came from (slide 7, page 3), and the analyst checks it against that.
+
+## How it works
+
+<ReportPipeline />
+
+The team uploads whatever the founder sent for the quarter. For each company, the pipeline looks at last quarter's report and the KPIs in it and builds a structured-output schema for this run, with one field per KPI. Each field holds the value, the unit, the period and the source. I use Pydantic's `create_model` for that, so a marketplace gets asked about GMV, a SaaS company about ARR, and nobody gets asked about things they don't track.
+
+Gemini fills the schema from the new material, along with the cash and runway, business and product news, and anything else worth reporting. The result is checked for types and for a source on every value, and written into our reporting workspace in Notion as a draft.
+
+## Caveats
+
+It drafts; it doesn't publish. An analyst is still the author of every report, and nothing goes to investors without that review. Founders who change their KPIs between quarters still need a human to decide what to do, and decks that are mostly images need more checking.
+
+## Stack
+
+Python and Django with Celery workers, Pydantic for the per-company schemas, Gemini for extraction (we moved over from an earlier OpenAI and LangChain version), and a small Notion client with retry on rate limits for writing the drafts.

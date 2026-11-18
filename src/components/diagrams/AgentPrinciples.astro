@@ -1,0 +1,10 @@
+---
+import Diagram from './Diagram.astro';
+---
+<Diagram title="ThinClaw design principles" caption="Principles, not architecture: each user's work stays inside their own boundary, and anything risky waits for a human." viewBox="0 0 720 220">
+  <rect class="box" x="20" y="70" width="150" height="80" rx="8" /><text x="40" y="104">chat</text><text class="small" x="40" y="126">one message</text>
+  <rect class="box hi" x="230" y="30" width="260" height="160" rx="8" /><text class="hi" x="250" y="60">your workspace</text>
+  <text class="small" x="250" y="88">· isolated, per-user limits</text><text class="small" x="250" y="110">· fail closed</text><text class="small" x="250" y="132">· secrets never in prompts</text><text class="small" x="250" y="154">· approval for risky steps</text>
+  <rect class="box" x="550" y="70" width="150" height="80" rx="8" /><text x="570" y="104">done</text><text class="small" x="570" y="126">result + log</text>
+  <path class="edge" d="M170 110 L226 110" /><path class="edge hi" d="M490 110 L546 110" />
+</Diagram>

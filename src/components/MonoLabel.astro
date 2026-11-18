@@ -1,0 +1,8 @@
+---
+interface Props { text: string }
+const { text } = Astro.props;
+---
+<p class="mono label">{text.toUpperCase()}</p>
+<style>
+  .label { margin: 0 0 .75rem; color: var(--muted); letter-spacing: .12em; }
+</style>

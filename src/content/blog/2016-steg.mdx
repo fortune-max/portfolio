@@ -1,0 +1,31 @@
+---
+title: "Steg: sending any file over WhatsApp as a \"PDF\""
+description: "An Android app that smuggles unsupported files through WhatsApp by dressing them up as tiny PDFs."
+tldr: "Smuggle any file through WhatsApp by prefixing it with PDF magic bytes."
+pubDate: 2016-12-22
+archive: true
+originalUrl: https://slaycode.wordpress.com/2016/12/22/94/
+---
+
+*Originally published on slaycode.wordpress.com, 2016. Lightly reformatted, otherwise left as 2016 me wrote it.*
+
+How do I start this now…
+
+Steg. The name of the app I built during the summer break and was too tied down by schoolwork to chronicle till Christmas vac. I got the name from a practice Elliot from Mr. Robot does, steganography. The art of hiding something within another. That’s pretty much what Steg does.
+
+Now most of my summer break was spent in school. We had to do some training, some of which involved report writing, my age old enemy. Of course that needed PDFs to plagiarize so I ended up downloading a number of those. On starting the report, everything else became 23.49% more interesting than they normally are (I checked), and I found myself wondering about the PDF file format I was viewing (after previous other wonderings that will not be recounted here for sake of the reader’s sanity). Having a terminal handy, I ran the file command on one of the files and it returned the filetype and version. Now I know the file command works by using the file’s magic bits so I did a bit of messing around and got the smallest file possible that’d still pass off as a PDF file by the file command. And then I had an idea.
+
+Now WhatsApp is a pretty popular application here and why not, it’s cheap, efficient and easy to use. But being a programmer you start to notice some things that most tend to overlook. The fact that pictures and videos are always previewed before they can be sent. The fact that if you forward a file you just sent to someone, a link to the file’s location is sent instead of the whole file getting uploaded again. And the fact that it allows you to send invalid links and corrupt PDF files. This was my way in.
+
+Developing a POC was pretty easy, took me like ten minutes and a terminal to see that I could append data to my really small PDF file (that’s actually just magic bits) and Whatsapp would let it through, and the receiver could then remove the bits at the front and get the original file. This would simplify having to send unsupported files through email to people and instead just send it directly during chat.
+
+Few weeks of hacking it together into an Android app brought Steg.
+
+How do I end this now…
+
+Download:
+
+- [Steg on Google Play](https://play.google.com/store/apps/details?id=fme.steg)
+- [Steg thread on XDA](https://forum.xda-developers.com/android/apps-games/app-steg-simple-app-to-send-unsupported-t3587058)
+
+[Watch the demo video ↗](https://www.youtube.com/watch?v=hHeTE6qMhro)

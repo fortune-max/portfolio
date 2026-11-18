@@ -1,0 +1,73 @@
+---
+title: Rewriting a live fintech platform one piece at a time
+description: How we replaced an eight-year-old VC platform in stages, with a new UI first, a new schema filled by a re-runnable ETL, and the numbers checked against the old system before anything switched.
+pubDate: 2026-11-04
+---
+
+Between late 2025 and mid-2026 I led the rewrite of the platform I work on: the system investors use to put money into startups, and that the back office uses for onboarding, signatures, valuations and quarterly reports. For most of it we were two engineers, down from six when I joined. I proposed it, planned it and wrote most of the code.
+
+What I wanted to avoid was building a new system for a year, switching everything over on one Friday, and spending Monday finding out which investor's numbers were wrong. So we moved it over in stages, and each stage had to be useful on its own.
+
+## Step 1: a new UI on the old backend
+
+The first thing people saw was a new admin app. It lived on its own domain, talked to the old backend, and the old version stayed up on another domain, so people could use whichever they liked. Most of the team is French, so I also made sure numbers were formatted the way they expect.
+
+Over a few months, fewer and fewer people opened the old one, until nobody did. That got the team a better interface early, and it meant I learned what every screen really needed by rebuilding it, not by reading old code. It also meant that when the new backend was ready, the frontend mostly needed a different base URL.
+
+## Step 2: a new schema, filled by a script
+
+The old database had grown over eight years of different people's ideas: tables that held a second copy of the truth, fields nothing used, four overlapping tables describing who is connected to whom. I redesigned the schema around how the product was actually used, and it went from 154 tables to 101. The four relationship tables became one, some many-to-many tables became JSON lists, and document files moved to one model with named slots.
+
+The new schema was filled by an ETL command that read the old MySQL database and wrote the new Postgres one in about 27 ordered steps: reference data, users, KYC, startups, investments, relationships, attachments and so on. I ran it on my machine against copies of production, pointed a second copy of the new UI at the result, and compared it with the old system. That loop took about three months and the script ran many times, so it had to be safe to run again and again.
+
+Two Postgres details cost me the most time. Clearing tables with `TRUNCATE ... CASCADE` follows foreign keys further than you expect: truncating the relationships table chained through users and wiped investments. A plain `DELETE FROM` per table, in the right order, did what I meant. And when you insert rows with explicit ids, Postgres doesn't move the id sequence along, so the next normal insert collides with an existing id. The fix was to reset every sequence after loading:
+
+```python
+def sync_sequences(cursor):
+    cursor.execute(
+        "SELECT table_name FROM information_schema.columns "
+        "WHERE table_schema = 'public' AND column_name = 'id'"
+    )
+    for (table,) in cursor.fetchall():
+        cursor.execute(
+            f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+            f"COALESCE((SELECT MAX(id) FROM {table}), 1))"
+        )
+```
+
+It ran twice: once before the steps that create rows with automatic ids, and once at the end.
+
+## Step 3: check the numbers before anything switches
+
+For money, "it looks right" isn't good enough. Alongside the ETL, a small script ran the same calculations through the old system and the new database and listed every difference: portfolio KPIs, valuations, investor positions.
+
+```python
+def check_parity(metric: str, ids: list[int]) -> list[Mismatch]:
+    mismatches = []
+    for pk in ids:
+        old = legacy_client.get_metric(metric, pk)   # old system's API
+        new = compute_metric(metric, pk)              # new backend, new database
+        if not close_enough(old, new):
+            mismatches.append(Mismatch(metric, pk, old, new))
+    return mismatches
+```
+
+There's nothing clever in it. It was useful because we ran it after every ETL change, and every difference it found either got fixed or got written down as a change we meant to make.
+
+## Step 4: the investor app, then the switch
+
+By then the new backend and the admin app lived in one repository, so the investor-facing app went on top of it last, with everything it needed already in place. About seven months in, we switched over: the ETL ran for real once, the apps pointed at the new backend, and the old AWS setup was switched off afterwards. Hosting costs dropped by about 95%.
+
+Investors kept their passwords, because Django could already check the old hashes, and we told them in advance they'd need to log in once more because the login tokens changed format. Migrations are never perfect, and this one went through with barely any complaints. Most of what we missed were small things, like a Slack notification the old system sent that nobody had written down.
+
+Once every environment was migrated, we deleted the ETL command. Keeping a 2,700-line script for a database that no longer exists only invites someone to run it.
+
+## How two people managed it
+
+A lot of the typing was done by coding agents, which only works with some structure around it. Every bigger change started as a written spec and a plan, the tests ran on every pull request, each pull request got a preview environment with a copy of production data, and nothing merged without an automated review on top of ours. Having everything in one repository helped the agents a lot.
+
+## What I'd do differently
+
+I'd write the comparison script on day one, against the old system alone. It would have doubled as a description of what "correct" meant before I started changing anything.
+
+I'd also turn the switch-over checklist into a script with a dry-run mode. The switch went fine, but the checklist lived in a document, and the practice runs and the real run should have been the same command.

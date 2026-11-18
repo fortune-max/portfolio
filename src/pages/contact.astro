@@ -1,0 +1,94 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MonoLabel from '../components/MonoLabel.astro';
+
+export const prerender = false; // reads ?sent / ?error so the form works without JavaScript
+
+const sent = Astro.url.searchParams.get('sent') === '1';
+const error = Astro.url.searchParams.get('error') === '1';
+---
+<BaseLayout title="Contact" description="Say hi to Fortune Max-Eguakun: roles, projects or questions about something I wrote." canonicalPath="/contact">
+  <section class="tone-dark page">
+    <div class="wrap narrow">
+      <MonoLabel text="Contact" />
+      <h1 class="display title">Say hi.</h1>
+      <p class="lede">Hiring for a senior role, want to talk about something I wrote, or found a bug on this site? Send a message and I'll reply from my own inbox, usually within a day or two.</p>
+
+      <p class="status" data-status role="status" aria-live="polite">
+        {sent && <span class="ok">Thanks! Your message is on its way. I'll get back to you soon.</span>}
+        {error && <span class="err">That didn't go through. Please check the fields and try again.</span>}
+      </p>
+
+      <form method="post" action="/api/contact" class="form" data-contact>
+        <label>Name<input name="name" required maxlength="100" autocomplete="name" /></label>
+        <span class="mono field-err" data-err="name"></span>
+        <label>Email<input name="email" type="email" required maxlength="254" autocomplete="email" /></label>
+        <span class="mono field-err" data-err="email"></span>
+        <label>Message<textarea name="message" required minlength="10" maxlength="5000" rows="7"></textarea></label>
+        <span class="mono field-err" data-err="message"></span>
+        <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off" /></label>
+        <button type="submit" class="mono">Send message ↗</button>
+      </form>
+      <p class="mono alt">Prefer LinkedIn? <a href="https://www.linkedin.com/in/fortune-max-eguakun/">Message me there ↗</a></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact]');
+  if (form) form.noValidate = true; // with JS we show our own inline errors; without JS the browser validates
+  const status = document.querySelector<HTMLElement>('[data-status]');
+  const show = (cls: 'ok' | 'err', text: string) => {
+    const span = document.createElement('span');
+    span.className = cls;
+    span.textContent = text;
+    status!.replaceChildren(span);
+  };
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector('button')!;
+    form.querySelectorAll<HTMLElement>('[data-err]').forEach((el) => (el.textContent = ''));
+    btn.disabled = true;
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      });
+      const body = await res.json().catch(() => ({ ok: false, errors: { form: 'Unexpected response.' } }));
+      if (body.ok) {
+        form.reset();
+        show('ok', "Thanks! Your message is on its way. I'll get back to you soon.");
+      } else {
+        for (const [k, v] of Object.entries(body.errors ?? {})) {
+          const slot = form.querySelector<HTMLElement>(`[data-err="${k}"]`);
+          if (slot) slot.textContent = String(v); else show('err', String(v));
+        }
+      }
+    } catch {
+      show('err', 'Network error. Please try again.');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .page { background: var(--bg); color: var(--fg); padding-block: clamp(2.5rem, 6vw, 5rem) 5rem; }
+  .narrow { max-width: 44rem; }
+  .title { font-size: var(--step-4); margin: 0 0 1rem; }
+  .lede { color: color-mix(in srgb, var(--fg) 85%, var(--bg)); margin: 0 0 1.5rem; }
+  .status { min-height: 1.5rem; margin: 0 0 1rem; }
+  .status :global(.ok) { color: var(--accent); }
+  .status :global(.err) { color: #ff8a7a; }
+  .form { display: grid; gap: .35rem; }
+  label { display: grid; gap: .4rem; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: .75rem; }
+  input, textarea { font: inherit; font-family: var(--font-display); font-size: 1.05rem; text-transform: none; letter-spacing: 0; color: var(--fg); background: transparent; border: 1px solid var(--rule); border-radius: 6px; padding: .7rem .8rem; width: 100%; }
+  input:focus, textarea:focus { border-color: var(--accent); outline: none; }
+  .field-err { color: #ff8a7a; min-height: 1em; }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  button { justify-self: start; margin-top: 1.25rem; background: var(--accent); color: var(--ink); border: 0; border-radius: 999px; padding: .8rem 1.4rem; font-weight: 600; letter-spacing: .08em; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: progress; }
+  .alt { margin-top: 2.5rem; color: var(--muted); }
+  .alt a { color: var(--accent); }
+</style>

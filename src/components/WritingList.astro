@@ -1,0 +1,28 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { readingTime } from '../lib/posts';
+interface Props { posts: CollectionEntry<'blog'>[] }
+const posts = Astro.props.posts.slice(0, 3);
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+---
+{posts.length > 0 && (
+  <ol class="list">
+    {posts.map((p, i) => (
+      <li class={i === 0 ? 'post featured' : 'post'}>
+        <p class="mono meta">{fmt(p.data.pubDate)} · {readingTime(p.body ?? '')} min read</p>
+        <h3 class="display t"><a href={`/blog/${p.id}`}>{p.data.title}</a></h3>
+        <p class="desc">{p.data.description}</p>
+      </li>
+    ))}
+  </ol>
+)}
+<style>
+  .list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 3rem; }
+  @media (max-width: 720px) { .list { grid-template-columns: minmax(0, 1fr); } }
+  .featured { grid-column: 1 / -1; padding-bottom: 2rem; border-bottom: 1px solid var(--rule); }
+  .meta { color: var(--muted); margin: 0 0 .5rem; }
+  .t { font-size: var(--step-2); margin: 0 0 .5rem; }
+  .featured .t { font-size: var(--step-3); }
+  .t a { text-decoration: none; }
+  .desc { margin: 0; color: color-mix(in srgb, var(--fg) 80%, var(--bg)); }
+</style>

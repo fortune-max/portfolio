@@ -1,0 +1,13 @@
+---
+import Diagram from './Diagram.astro';
+---
+<Diagram title="CloudStation3 streaming pipeline" caption="Frames go through shared memory to a hardware encoder, then over WebRTC. Controller input comes back on a DataChannel to a virtual joystick." viewBox="0 0 720 240">
+  <rect class="box" x="20" y="30" width="140" height="70" rx="8" /><text x="38" y="60">emulator</text><text class="small" x="38" y="82">patched hook</text>
+  <rect class="box" x="200" y="30" width="140" height="70" rx="8" /><text x="218" y="60">shared mem</text><text class="small" x="218" y="82">3.7 MB / frame</text>
+  <rect class="box hi" x="380" y="30" width="140" height="70" rx="8" /><text class="hi" x="398" y="60">NVENC H.264</text><text class="small" x="398" y="82">GPU encode</text>
+  <rect class="box" x="560" y="30" width="140" height="70" rx="8" /><text x="578" y="60">browser</text><text class="small" x="578" y="82">WebRTC video</text>
+  <rect class="box hi" x="380" y="150" width="140" height="70" rx="8" /><text class="hi" x="398" y="180">uinput pad</text><text class="small" x="398" y="202">virtual joystick</text>
+  <path class="edge" d="M160 65 L196 65" /><path class="edge" d="M340 65 L376 65" /><path class="edge hi" d="M520 65 L556 65" />
+  <path class="edge" d="M630 100 L630 185 L524 185" /><text class="small" x="540" y="176">Gamepad API</text>
+  <path class="edge" d="M380 185 L90 185 L90 104" /><text class="small" x="160" y="176">evdev events</text>
+</Diagram>

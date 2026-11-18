@@ -1,0 +1,16 @@
+---
+title: "MTK ADB: ADB without a PC"
+description: "An Android app that gives you ADB shell or root access on MediaTek devices, no computer required."
+tldr: "ADB on the device itself, without one-click-root apps littering your system partition."
+pubDate: 2016-01-17
+archive: true
+originalUrl: https://slaycode.wordpress.com/2016/01/17/mtk-adb-adb-without-a-pc/
+---
+
+*Originally published on slaycode.wordpress.com, 2016. Lightly reformatted, otherwise left as 2016 me wrote it.*
+
+I started working on a project last month that allows you to use ADB directly on your device. Figured this was useful because all the weird Chinese apps that give you root never do it cleanly and I like my device not being messed by anyone other than me. It’s no longer just an su binary and SuperUser APK. They replace system binaries now and multiple “temp” files including logs and helper binaries and libraries that they don’t clean up after the root process. Even the UnRoot process you’d think would take care of these files doesn’t. Just removes the su binary. Same goes for One Click Unroot apps. I’m particularly annoyed about this because I got a new device running Android One that I recently rooted and now I can’t install any updates because my system files have been messed with and an update would brick the phone. The app pretty much gives you ADB access directly on your device at just a click. And no changes to your device. It only works for MediaTek devices running Android 4.x and can give you Shell or Root access through ADB on your device. It’s worth mentioning that some devices allow ADB to run as Root and some only as Shell but it all depends on the manufacturer of your device. I have five devices and two of them allow Root access. The rest get default ADB (Shell access).
+
+You can get it [on XDA](http://forum.xda-developers.com/android/software-hacking/app-mtk-adb-adb-directly-device-t3313315).
+
+[Watch the demo video ↗](https://www.youtube.com/watch?v=_bt8BVaDCf0)

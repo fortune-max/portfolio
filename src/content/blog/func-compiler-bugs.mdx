@@ -1,0 +1,100 @@
+---
+title: "Three FunC bug reports: one false alarm, $4,200 in bounties, and a changed default"
+description: Between 2022 and 2024 I sent three bug reports about TON's smart-contract compiler. The first was my own fault, the second paid out the next day, and the third took six months.
+pubDate: 2026-11-11
+---
+
+In 2022 I spent a lot of evenings on TON smart-contract contests. That's how I ended up sending three bug reports about the FunC compiler over about 15 months. One was my fault, one paid about $2,400, and one paid about $1,800 and changed a compiler default. Here's how each went.
+
+Quick background if you haven't used it: FunC is the language TON smart contracts are written in. It looks a bit like C, compiles to Fift assembly, and runs on the TON Virtual Machine, which is a stack machine. Your variables are really names for slots on a stack, and the compiler's job is to shuffle those slots so the code does what you wrote. When it shuffles wrong, nothing crashes. A variable just ends up holding the wrong value, which in a smart contract can mean real money.
+
+## Report 1: it was me (September 2022)
+
+I was debugging a contest solution and saw two variables swap values between lines for no reason I could see. The contest's own judge seemed to have hit the same thing, so I was fairly sure it wasn't just me.
+
+I cut the contract down to about ten lines, wrote a comment on each line saying what should happen, and sent it to the TON bug bounty bot with my output attached.
+
+A couple of hours later they asked which compiler version I had, and which `Asm.fif`. They thought it was a known problem with empty `IF` blocks that had been fixed in May. I'd built my tools from source in early April.
+
+I ran `toncli update_libs`, ran the script again, and got the right output. Report closed. Their sign-off was "Maybe next time we will together fix serious vulnerability", which was kind of them.
+
+So, first thing I check now before blaming any compiler, framework or library: am I actually on the current version?
+
+## Report 2: the loop that didn't run (December 2022)
+
+Three months later, during another contest, a loop stopped looping. This is the whole proof of concept I sent, comments included:
+
+```c
+() recv_internal() impure { }
+
+() my_fn() method_id {
+  int multiplier = 1;           ;; initialize variable
+  while (multiplier == 1) {     ;; this condition is met, but compiler thinks not
+    ~dump(999);                 ;; dump statement not executed
+    multiplier *= 2;            ;; ensure this doesn't run forever
+  }
+  ~dump(multiplier);            ;; still unchanged (multiplier still 1)
+  ;; PS: using an if instead renders the correct output
+}
+```
+
+`multiplier` starts at 1, so `multiplier == 1` is true and the body should run once: print `999`, double `multiplier` to 2, then exit. Instead the body never ran, and `multiplier` was still 1 afterwards. The same check written as an `if` worked fine.
+
+My guess is the compiler used what it knew about `multiplier`'s starting value to simplify the loop condition and got the `while` case wrong. I never looked at the fix, though, so that part is only a guess.
+
+The timeline I do know:
+
+- 28 Dec, 10:23: report sent
+- 28 Dec, 14:00: "Hi, we are checking it"
+- 29 Dec: fixed in the testnet branch, and a bounty of **about $2,400** (1,000 TON at the time)
+
+Less than a day and a half. The reason it was taken seriously is that skipped code in a contract fails silently. A skipped loop could be a skipped balance update or a skipped check, with no error anywhere.
+
+## Report 3: argument order (January 2024)
+
+The last one was about the order arguments get evaluated in when you call an `asm` function. FunC lets you write functions directly in assembly, and their parameters can be listed in whatever order the assembly wants them on the stack. The standard library's `store_uint` is one of them:
+
+```c
+builder store_uint(builder b, int x, int len) asm(x b len) "STUX";
+```
+
+`asm(x b len)` means the value goes on the stack before the builder. The compiler used to evaluate the arguments in that stack order too, not left to right as you wrote them. Most of the time you'd never notice. When the arguments have side effects, like reading from the same slice twice, the order is everything. This is the core of what I sent:
+
+```c
+cell hey_cell = begin_cell().store_uint(7, 4).store_uint(3, 3).end_cell();
+
+;; this fails
+slice hey_slice = hey_cell.begin_parse();
+builder some = begin_cell()
+  .store_uint(hey_slice~load_uint(4), 4)
+  .store_uint(hey_slice~load_uint(3), 3);
+~dump([123, some.end_cell().begin_parse().preload_uint(4)]); ;; [123, 11] False
+
+;; works and same as above but with a modifier method
+slice hey_slice_2 = hey_cell.begin_parse();
+builder some_2 = begin_cell()
+  .store_uint(hey_slice_2~load_uint(4), 4);
+some_2~store_uint(hey_slice_2~load_uint(3), 3);
+~dump([124, some_2.end_cell().begin_parse().preload_uint(4)]); ;; [124, 7] OK
+```
+
+The cell holds the bits `0111 011`: a 7 in four bits, then a 3 in three. In the chained version, the outer `store_uint`'s value is `load_uint(3)` and its builder is the whole inner chain, so the 3-bit read ran first:
+
+| | first read | second read | stored first |
+|---|---|---|---|
+| What I wrote | 4 bits: `0111` = 7 | 3 bits: `011` = 3 | 7 |
+| What ran | 3 bits: `011` = 3 | 4 bits: `1011` = 11 | 11 |
+
+Both reads succeed and return valid numbers, just the wrong ones, and nothing errors. Chaining `store_` calls while reading from an incoming message is one of the most common things you do in a contract, for example when copying fields into an outgoing message. There was already an opt-in fix, `#pragma compute-asm-ltr`, but you only turn on things you know about.
+
+This one took a while. They confirmed it after three weeks, then said they needed more time, then that they were preparing a bigger FunC update that would cover it. I followed up about once a month.
+
+After almost six months I got the full answer. The team already knew about the behaviour and had decided it wasn't serious enough to change. My report showed a case where it changed things "drastically and in unexpected way", and that was enough: `compute-asm-ltr` became **the default in FunC 0.5.0**, along with some other changes. The bounty was 250 TON, about $1,800 when it was paid, and sized with the TON price at the time I reported it in mind (I'd asked about that).
+
+It's the smaller of the two payouts, and the one I'm happiest about, because anyone writing FunC now gets the safer behaviour without ever reading my report.
+
+## What I took from it
+
+Looking at the three side by side, the reports that worked had a few things in common. They were tiny, about ten lines. Every line had a comment saying what should happen. Report 2 had the `if` version that worked, which pointed straight at the problem. And when it was slow, I kept following up politely instead of giving up.
+
+What I'd do differently is mostly about report 3. I described the behaviour and left the impact implied, and the team already knew the behaviour. If I'd opened with a realistic contract whose fields come back swapped, I think it would have moved faster than six months. I also should have offered my repro scripts as test cases to the compiler repo, not just as attachments in a chat.

@@ -1,0 +1,122 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MonoLabel from '../components/MonoLabel.astro';
+import { Image } from 'astro:assets';
+import portrait from '../assets/photos/about-portrait.jpg';
+import barcelona from '../assets/photos/barcelona.jpg';
+import chess from '../assets/photos/chess.jpg';
+import '../styles/prose.css';
+---
+<BaseLayout title="About" description="How Fortune Max-Eguakun got into building software, from PvP games in a school computer lab to running engineering at a VC platform.">
+  <section class="tone-dark page">
+    <div class="wrap">
+      <div class="top">
+        <div>
+          <MonoLabel text="About" />
+          <h1 class="display title">I've been building things since I was 14.</h1>
+          <div class="prose intro">
+            <p>
+            It started with small PvP games in the school computer lab. My friends would suggest characters, I'd make them,
+            and they'd use them as their avatars when we fought. It was just a small thing we did. From there I moved on to
+            modding GTA San Andreas, changing the gameplay, the maps and how things behaved.
+            </p>
+          </div>
+        </div>
+        <Image class="portrait" src={portrait} alt="Fortune standing in a doorway, in a white T-shirt" widths={[320, 640]} sizes="(max-width: 820px) 70vw, 320px" loading="eager" />
+      </div>
+      <div class="prose">
+        <p>
+          At some point I decided to learn it properly. Java came first, for small Android apps, then Python for
+          scripting. Android got me into Linux, since that's what's underneath, and Linux got me into rooting phones and
+          seeing how far I could push them. That's also where C++ came in, first for working with binaries and later for
+          competitive programming.
+        </p>
+        <p>
+          The biggest thing I built in that phase was an anti-theft app for Android. It took a screenshot every 30 seconds
+          and stored it on the phone and in your Google Drive, and on every reboot it fetched and ran a script you'd set
+          up in advance: get the location, lock the device, remove a password, whatever you needed. The original idea
+          was actually simpler. If you saw something on your phone and forgot where, you could search your screenshots in
+          Drive and find it. I still have that data somewhere.
+        </p>
+
+        <h2>Engineering, then software</h2>
+        <figure class="side">
+          <Image src={chess} alt="Fortune smiling over a chess board at night, with the moon over the sea behind him" widths={[300, 600]} sizes="(max-width: 820px) 100vw, 300px" />
+          <figcaption>Chess by the sea.</figcaption>
+        </figure>
+        <p>
+          I did my bachelor's in mechanical engineering at the University of Benin. I already liked programming and
+          figured an engineering degree would teach me things I wouldn't pick up on my own. My final-year project was a
+          hybrid go-kart with an engine and an electric motor. I enjoy physical engineering, but I like software more,
+          because you can go from an idea to something people use much faster.
+        </p>
+        <p>
+          Competitive programming filled the gaps: Code Jam, Hash Code, Hacker Cup, and TON smart-contract contests. I
+          was often near the top in Nigeria. Mostly I just liked how the problems made me think, and I'd sometimes spend
+          longer on one than I should have.
+        </p>
+
+        <h2>Bank of America, and a Raspberry Pi</h2>
+        <p>
+          In 2019 I had internship offers from Goldman Sachs and Bank of America, and picked Bank of America because they
+          could offer six months in Dublin instead of a summer. It was my first time on a big team, and I learned a lot
+          about reporting on my work and asking good questions. I helped with the move from Python 2 to 3 before Python
+          2's end of life and built a dashboard for viewing trades from different booking systems. The team was in London
+          and India, with a lot of approvals and older tech. It was useful, but it wasn't my speed.
+        </p>
+        <p>
+          Around the same time my university asked me to look at how they managed student results. It was an MS Access
+          database. I proposed something better and built it with two other students: registration, results, GPA, and
+          the result sheets that get printed and pinned up each semester. It's sensitive work, because a GPA decides
+          whether someone graduates. The school wanted it on their premises, so it first ran on a Raspberry Pi on campus,
+          which got tricky once I was travelling. The other two moved on, I kept going, and today it runs in the cloud
+          for a few cents per department a month, with the frontend on a free tier, so the only real bill is the domain.
+          Five departments still use it, and I'm still shipping updates.
+        </p>
+
+        <h2>Master's, and OneRagtime</h2>
+        <figure class="banner">
+          <Image src={barcelona} alt="Fortune on a rooftop in Barcelona, with the Sagrada Família behind him" widths={[720, 1440]} sizes="(max-width: 820px) 100vw, 720px" />
+          <figcaption>Barcelona, where I've lived since starting my master's.</figcaption>
+        </figure>
+        <p>
+          For my master's at Harbour.Space in Barcelona I picked front-end engineering because it was the side I knew
+          least. I'd always built backends and simple UIs. The degree showed me how much goes into a good interface:
+          frameworks, performance, WebAssembly, canvas, web workers. My capstone was CloudStation3. I'd moved to Barcelona
+          and couldn't bring my PlayStation, so I built a way to play my games from any device.
+        </p>
+        <p>
+          During the master's I started a one-year internship at OneRagtime, a VC platform, in April 2023. I'd already
+          been building things for years, so I could deliver more than they expected from an intern, and they offered me a
+          full-time role. I've kept trying ideas there: JSDoc types as a stopgap so the frontend and backend agreed on
+          their contracts without asking the whole team to switch tools, an LLM tool that pulls the important parts out of startup pitch
+          decks, AI-drafted quarterly reports, and then the rewrite of the whole platform. When I joined there were six engineers and a designer. People left
+          one at a time, and by mid-2025 we were two, with me owning the architecture and technical decisions. Since September 2026
+          I've been the only engineer, and I'm now onboarding the next.
+        </p>
+
+        <h2>Now</h2>
+        <p>
+          I'm still learning how far I can push AI tools in my own work. I build with coding agents every day, and on the
+          side I'm building ThinClaw, a personal assistant that's actually useful to me. I'm looking for a senior backend
+          or full-stack role. If that's what you're hiring for, <a href="/contact">say hi</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .page { background: var(--bg); color: var(--fg); padding-block: clamp(2.5rem, 6vw, 5rem) 5rem; }
+  .title { font-size: var(--step-4); margin: 0 0 2rem; max-width: 16ch; }
+  .top { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 3rem; align-items: start; margin-bottom: 1rem; }
+  .portrait { width: 100%; height: auto; border-radius: 6px; }
+  @media (max-width: 820px) { .top { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; } .portrait { max-width: 360px; } }
+  .banner { margin: 0 0 1.75rem; }
+  .banner :global(img) { width: 100%; height: auto; border-radius: 6px; display: block; }
+  .banner figcaption { font-size: var(--step--1); color: var(--muted); margin-top: .5rem; }
+  .side { float: right; width: 300px; margin: .25rem 0 1rem 2rem; }
+  .side :global(img) { width: 100%; height: auto; border-radius: 6px; display: block; }
+  .side figcaption { font-size: var(--step--1); color: var(--muted); margin-top: .5rem; }
+  .prose h2 { clear: both; }
+  @media (max-width: 820px) { .side { float: none; width: 100%; margin: 0 0 1.5rem; } }
+</style>

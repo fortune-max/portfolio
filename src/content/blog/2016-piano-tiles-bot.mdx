@@ -1,0 +1,20 @@
+---
+title: "Python script that plays Piano Tiles"
+description: "A 16-line Python bot that watches the screen of a rooted phone and taps the black tiles."
+tldr: "16 lines of Python, a rooted phone and a lot of screenshots."
+pubDate: 2016-05-09
+archive: true
+originalUrl: https://slaycode.wordpress.com/2016/05/09/python-script-that-plays-piano-tiles/
+---
+
+*Originally published on slaycode.wordpress.com, 2016. Lightly reformatted, otherwise left as 2016 me wrote it.*
+
+Last week, I tried playing the first, original piano tiles. I never really was a fan of the second one. It looked like a good idea completely squeezed for every thing it’s got. Too loud visuals and the whole concept of “life”. The two developing companies were even different. Umoni (part 1) looking like a bunch of guys just wanting to share a simple, fun game. Cheetahmobile doing it’s best to pump the flawless version full of bloat while trying to make as much cash as they can, without being too obvious of course.
+
+Anyway, nuff about that. I got the two year old backup of the game from my hard drive (of backups), installed and got to playing. Needless to say I enjoyed it very much. So much I completely ignored the Calculus test I have next week. Eventually after about an hour’s play, I considered if the game was predictable enough to be played by a computer. I’d being thinking about that with Flappy Bird and Amazing Brick. Both very good classics. But implementing this seemed much easier as I noticed the tile color and position could be known beforehand. Modding the game seemed too much work so I considered this as a sort of AI project. A computer gamer. It’d look at the screen and then know where to press. Pretty much like your regular human. But flawlesser. Yes, I’m keeping that.
+
+Language? Well I’d mostly being using Java for most projects but deciding I needed to try something in Python as it’d been a while since I used it. Android sort of mostly forces(?) Java for apps. So Python it was. Basics of implementation, get the color of the tile (constant) and the four possible positions (also constant). Next was visual. The program needs to see what it’s doing. As I had a rooted phone handy, I tried a loop to see the interval between successive screenshots. About one capture per sec. Not practical enough for high speeds. But as the only other alternative was probably having to go through the phone’s graphics buffer and parsing it to get only a section of the screen, and this was mostly “Proof of Concept” code, I had to go with the screenshot method. Joining all this together and looping it brought me pretty impressive code and in 16 lines no less (Hurray Python!). Ran it and the rest is history. Feel free to optimize if you wish. The m (master) variable is a tuple for tuples of the four x,y coordinates to check for the black tile. Also the source code for the screencap command might be worth a look/edit if you’re interested in optimizing this or making game-playing programs. I suppose I should go read for that test.
+
+Source: [the 16-line script on Google Drive](https://drive.google.com/file/d/0B3yqMj1fyQI0VVpWTzdQSjBfYnc/view?usp=docslist_api)
+
+[Watch the demo video ↗](https://www.youtube.com/watch?v=L95kU3ybzbQ)

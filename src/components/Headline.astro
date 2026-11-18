@@ -1,0 +1,10 @@
+---
+// Renders a headline, wrapping the first occurrence of `strike` in <s>.
+interface Props { text: string; strike?: string }
+const { text, strike } = Astro.props;
+const i = strike ? text.indexOf(strike) : -1;
+---
+{i < 0 ? text : <>{text.slice(0, i)}<s>{strike}</s>{text.slice(i + strike!.length)}</>}
+<style is:global>
+  h1 s, h2 s, .display s { text-decoration-color: var(--accent); text-decoration-thickness: .12em; }
+</style>

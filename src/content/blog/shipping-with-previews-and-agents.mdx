@@ -1,0 +1,74 @@
+---
+title: Twenty pull requests a week with two engineers and a lot of agents
+description: "How a very small team ships to a live fintech platform every day: a worktree per feature, a full copy of production for every pull request, one automated review, and merge means deploy."
+pubDate: 2026-11-17
+draft: false
+---
+
+Over the last three months our team merged about 22 pull requests a week into the platform I work on. Most weeks that's two engineers, plus a new one we're onboarding, plus coding agents doing a lot of the typing. Half of those pull requests were merged within 30 minutes of being opened, and the typical one changes about 250 lines.
+
+That speed isn't from skipping checks. It's from making the checks cheap enough that nobody is tempted to skip them. This is the setup, piece by piece. My colleague and I built it together, and I'll say which parts were which where it matters.
+
+## 1. Every feature gets its own worktree
+
+When several people and several agents work in one repository, the shared checkout becomes a hazard. An agent running `git checkout` to start its task moves `HEAD` out from under whoever else is in that folder, and sometimes takes their uncommitted work with it.
+
+So every feature starts in its own git worktree, branched from a freshly fetched `main`:
+
+```bash
+git fetch origin
+git worktree add ../wt-kyc-renewals -b feat/kyc-renewals origin/main
+# ...work, commit, open the PR...
+git worktree remove ../wt-kyc-renewals && git worktree prune
+```
+
+Fetching first matters more than it looks. A worktree branched from a stale local `main` means an avoidable rebase later, and that rebase is where conflicts in migrations show up.
+
+## 2. Docs go in before the pull request, not after
+
+Our repository has a `CLAUDE.md` in each part of the stack, plus reference docs, specs and plans: over a hundred specs so far. Agents read them at the start of every session, so an out-of-date doc makes the next agent wrong.
+
+The rule is that the doc changes are part of the diff before the pull request exists. That includes one plain-English line in a weekly notes file, written for the person who reads our Friday update email rather than for an engineer. The email is now put together from that file, not reconstructed from `git log` on Friday afternoon.
+
+The order matters for a practical reason too, which is the next section.
+
+## 3. One automated review, read and acted on
+
+Every pull request gets an automatic review from Claude when it's opened. It looks for bugs and edge cases, security problems, performance issues, breaking changes to the API or data model, and mismatches between a backend change and the frontend code that calls it, which matters in a repository that holds both. It catches real bugs often enough that we treat it as part of the process, not a nice extra.
+
+Two rules came from using it for a few months:
+
+- **One round, not two.** A second review on the fixes almost never found anything the first one hadn't. So we fix or explicitly decline each finding, wait for CI to pass, and merge. CI gates the merge; the review doesn't.
+- **Open the pull request when the diff is final.** The review runs when a pull request is opened, not on every push, so a quick amend after opening gets no review at all. That's also why the docs from section 2 have to be in the first push.
+
+Declining a finding is fine. Ignoring one isn't: silence reads as "missed it".
+
+## 4. Every pull request gets its own copy of production
+
+This is the part that changed how we work the most. When a pull request touches the backend, it gets its own environment: the Django backend, a Celery worker, Redis, and its own Postgres database restored from last night's production snapshot. The frontends get Vercel previews that talk to that backend.
+
+My colleague built the database side, seeding each environment from the nightly snapshot. I did the routing, so each frontend preview finds its own backend, and the parts that made previews pleasant to use:
+
+- **A stable address per pull request.** Vercel gives every push a new URL, and everything that keeps you signed in is tied to the hostname. A new URL meant logging in again on every push. Each pull request now gets a fixed hostname that survives pushes.
+- **One login for every preview.** The previews live under one parent domain, and the login cookie is set for that domain, so signing in once on staging signs you in to every preview. Google sign-in doesn't allow wildcard origins, so this was the only way to make it work without registering every preview.
+- **Lazy builds.** A pull request that only changes the backend reuses the existing frontend builds, and a docs-only pull request builds nothing.
+
+The effect is that reviewing a change means clicking a link and trying it on realistic data, not reading a diff and imagining what it does.
+
+## 5. Merge means deploy
+
+`main` is production. Merging deploys the backend to Railway and the frontends to Vercel, each only if its own files changed. Backend CI runs `makemigrations --check`, so two parallel features that both add migrations conflict when the pull request is opened, not after merge.
+
+Staging still exists, but only as a fixed address for integrations that need one. Every Monday it restores the latest production snapshot and then fast-forwards to `main`, in that order, so new code never runs on an old schema.
+
+## What went wrong along the way
+
+None of this worked the first time, and the failures were more useful than the successes.
+
+The weekly staging refresh relied on a scheduled GitHub workflow, which GitHub runs on a best-effort basis. Twice it started six to eight hours late, which left staging on week-old code over a fresh database for most of a day. The fix was to trigger the code sync from the database restore, so the order is built in rather than two clocks agreeing.
+
+The refresh also reported its health to a heartbeat endpoint, and for three weeks that report was silently failing: the container image had no CA certificates, so every HTTPS call to the heartbeat and to Slack failed quietly, while the backup upload worked because its tool ships its own certificates. An alert that can fail without anyone noticing needs its own proof that it's alive.
+
+## Why it works
+
+Each piece is small. Together they mean an agent or a person can go from idea to a reviewed, tested, previewed change on production data in an afternoon, and back it out just as quickly. That's what lets a team this size keep up with the business and still sleep at night.

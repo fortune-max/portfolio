@@ -1,0 +1,16 @@
+---
+interface Props { metrics: { label: string; value: string }[] }
+---
+<dl class="mono metrics">
+  {Astro.props.metrics.map((m) => (
+    <div class="row"><dt>{m.label}</dt><dd>{m.value}</dd></div>
+  ))}
+</dl>
+<style>
+  .metrics { margin: 0; border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.1rem; }
+  .row { display: flex; justify-content: space-between; gap: 1rem; padding-block: .3rem; }
+  .row + .row { border-top: 1px dashed var(--rule); }
+  dt { color: var(--muted); }
+  dd { margin: 0; font-weight: 600; color: var(--fg); text-align: right; }
+  .row:first-child dd { color: var(--accent); }
+</style>
