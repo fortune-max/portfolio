@@ -6,13 +6,13 @@ headline: Rewrite a live platform. No big bang.
 strike: big bang
 summary: I proposed and led the rewrite of a live VC platform, and wrote about 85% of the code at switch-over. We moved it over one piece at a time, and hosting got about 95% cheaper.
 role: Proposed, led and built
-period: Nov 2025 – Oct 2026
+period: Nov 2025 – Jul 2026
 stack: [Django, PostgreSQL, Vue 3, Vite, Celery, Railway, Vercel]
 metrics:
   - { label: infra cost, value: "−95%" }
   - { label: tables, value: "154 → 101" }
   - { label: active investors, value: "~450" }
-  - { label: portfolio revaluation, value: "minutes → ~7 s" }
+  - { label: revaluation per startup, value: "minutes → 0.3 s" }
 ---
 import StranglerFig from '../../components/diagrams/StranglerFig.astro';
 
@@ -44,11 +44,13 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 **The schema.** I redesigned it around how the product was actually used, not how it had grown. Four overlapping tables describing who is connected to whom became one relationship model. Documents scattered across models moved to one attachment model with named slots, some many-to-many tables became simple lists, and valuations got their own tables of precomputed results. The hard part was that every one of those decisions also had to map cleanly from the old data in the ETL script. By the end there were 101 tables instead of 154.
 
-**Agreeing on what "the same numbers" means.** Before each part moved over, I compared the portfolio numbers in the old and new systems and went through every difference until none were left that we hadn't chosen on purpose. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
+**Getting the same numbers.** Before the switch, I checked the new system's portfolio numbers against the old one and went through every difference until the only ones left were changes we'd chosen on purpose.
+
+**Valuations.** In phase 1 the new screens needed figures the old schema didn't store, such as value after tax and carry, euro amounts and cash already returned from exits, so I computed them whenever a page asked for them. That was always correct and needed no migration, but every page load paid for it again. Once the new schema existed, I moved to computing on write: when a valuation changes, one engine loads the startup's data in 11 queries, computes every position in one pass and stores the results, so pages and totals just read them. A large startup takes about 0.3 s, and the whole portfolio around 7 s.
 
 **The database move.** Going from MySQL to Postgres at the same time meant the ETL script had to be safe to run again and again. I practised it on copies of production until it was dull, and then ran it for real once.
 
-**Background work.** A lot of the platform happens outside a request: CRM and mailing-list syncs, daily emails, Slack alerts, document indexing, scheduled checks. That's about 70 Celery tasks on Redis. Two rules saved us the most trouble. Tasks are queued only after the database transaction commits, so a worker never looks for a row that doesn't exist yet. And anything that runs less often than hourly has to be a clock-time schedule, because a plain interval restarts its countdown every time the service redeploys, and some jobs would otherwise never run. A startup check refuses a schedule that breaks that rule.
+**Background work.** A lot of the platform happens outside a request: CRM and mailing-list syncs, daily emails, Slack alerts, document indexing, scheduled checks. That's about 60 Celery tasks on Redis. Two rules saved us the most trouble. Tasks are queued only after the database transaction commits, so a worker never looks for a row that doesn't exist yet. And anything that runs less often than hourly has to be a clock-time schedule, because a plain interval restarts its countdown every time the service redeploys, and some jobs would otherwise never run. A startup check refuses a schedule that breaks that rule.
 
 **Knowing when something breaks.** With one or two engineers, nobody is watching dashboards, so the platform has to tell me. Every request is logged before the view runs, so even a crash leaves a record, with personal data redacted and a link to its Sentry issue. Server errors raise one Slack alert per problem, not one per request. It also alerts on failures that don't crash anything, such as a third-party quota running out.
 
@@ -61,7 +63,7 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 - Hosting costs down about **95%** after the old AWS setup was switched off.
 - About **450** active investors moved over.
 - **154 → 101** tables.
-- Portfolio revaluation in about **7 seconds** instead of minutes per startup.
+- Revaluing a startup in about **0.3 s**, and the whole portfolio in about 7 s.
 
 ## Stack
 
