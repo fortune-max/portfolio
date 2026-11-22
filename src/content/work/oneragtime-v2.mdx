@@ -42,7 +42,7 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 ## Bits that were harder than they looked
 
-**The schema.** Working out which of 154 tables were still the source of truth for something took most of the thinking. By the end there were 101 tables, and 14 migration files instead of 44.
+**The schema.** I redesigned it around how the product was actually used, not how it had grown. Four overlapping tables describing who is connected to whom became one relationship model. Documents scattered across models moved to one attachment model with named slots, some many-to-many tables became simple lists, and valuations got their own tables of precomputed results. The hard part was that every one of those decisions also had to map cleanly from the old data in the ETL script. By the end there were 101 tables instead of 154.
 
 **Agreeing on what "the same numbers" means.** Before each part moved over, I compared the portfolio numbers in the old and new systems and went through every difference until none were left that we hadn't chosen on purpose. I also replaced the valuation recalculation, which used to take minutes per startup, with a batch version: about 0.3 s per startup, and around 7 s for the whole portfolio.
 
