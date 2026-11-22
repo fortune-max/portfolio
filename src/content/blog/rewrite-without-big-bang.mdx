@@ -16,7 +16,7 @@ Over a few months, fewer and fewer people opened the old one, until nobody did. 
 
 ## Step 2: a new schema, filled by a script
 
-The old database had grown over eight years of different people's ideas: tables that held a second copy of the truth, fields nothing used, four overlapping tables describing who is connected to whom. I redesigned the schema around how the product was actually used, and it went from 154 tables to 101. The four relationship tables became one, some many-to-many tables became JSON lists, and document files moved to one model with named slots.
+The old database had grown over eight years of different people's ideas: columns that duplicated data held elsewhere, fields nothing used, four overlapping tables describing who is connected to whom. I redesigned the schema around how the product was actually used, and it went from 154 tables to 101. The four relationship tables became one, some many-to-many tables became JSON lists, and document files moved to one model with named slots.
 
 The new schema was filled by an ETL command that read the old MySQL database and wrote the new Postgres one in about 27 ordered steps: reference data, users, KYC, startups, investments, relationships, attachments and so on. I ran it on my machine against copies of production, pointed a second copy of the new UI at the result, and compared it with the old system. That loop took about three months and the script ran many times, so it had to be safe to run again and again.
 
