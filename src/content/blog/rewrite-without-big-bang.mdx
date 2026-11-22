@@ -12,13 +12,13 @@ What I wanted to avoid was building a new system for a year, switching everythin
 
 The first thing people saw was a new admin app. It lived on its own domain, talked to the old backend, and the old version stayed up on another domain, so people could use whichever they liked. Most of the team is French, so I also made sure numbers were formatted the way they expect.
 
-Over a few months, fewer and fewer people opened the old one, until nobody did. That got the team a better interface early, and it meant I learned what every screen really needed by rebuilding it, not by reading old code. It also meant that when the new backend was ready, the frontend mostly needed a different base URL.
+Over a few months, fewer and fewer people opened the old one, until nobody did. That got the team a better interface early, and it meant I learned what every screen really needed by rebuilding it, not by reading old code.
 
 ## Step 2: a new schema, filled by a script
 
 The old database had grown over eight years of different people's ideas: columns that duplicated data held elsewhere, fields nothing used, four overlapping tables describing who is connected to whom. I redesigned the schema around how the product was actually used, and it went from 154 tables to 101. The four relationship tables became one, some many-to-many tables became JSON lists, and document files moved to one model with named slots.
 
-The new schema was filled by an ETL command that read the old MySQL database and wrote the new Postgres one in about 30 ordered steps: reference data, users, KYC, startups, investments, relationships, attachments and so on. I ran it on my machine against copies of production, pointed a second copy of the new UI at the result, and compared it with the old system. That loop took about three months and the script ran many times, so it had to be safe to run again and again.
+The new schema was filled by an ETL command that read the old MySQL database and wrote the new Postgres one in about 30 ordered steps: reference data, users, KYC, startups, investments, relationships, attachments and so on. I ran it against copies of production over about three months, and the script ran many times.
 
 Two Postgres details cost me the most time. Clearing tables with `TRUNCATE ... CASCADE` follows foreign keys further than you expect: on a local copy, truncating the relationships table chained through users and emptied investments. A plain `DELETE FROM` per table, in the right order, did what I meant. And when you insert rows with explicit ids, Postgres doesn't move the id sequence along, so the next normal insert collides with an existing id. The fix was to reset every sequence after loading:
 
