@@ -63,7 +63,7 @@ Staging still exists, but only as a fixed address for integrations that need one
 
 ## What went wrong along the way
 
-None of this worked the first time, and the failures were more useful than the successes.
+Two parts didn't work the first time, and both taught us something.
 
 The weekly staging refresh relied on a scheduled GitHub workflow, which GitHub runs on a best-effort basis. Twice it started six to eight hours late, which left staging on week-old code over a fresh database for most of a day. The fix was to trigger the code sync from the database restore, so the order is built in rather than two clocks agreeing.
 
@@ -71,4 +71,4 @@ The refresh also reported its health to a heartbeat endpoint, and that report wa
 
 ## Why it works
 
-Each piece is small. Together they mean an agent or a person can go from idea to a reviewed, tested, previewed change on production data in an afternoon, and back it out just as quickly. That's what lets a team this size keep up with the business and still sleep at night.
+Each piece is small. Together they mean an agent or a person can go from idea to a reviewed, tested, previewed change on production data in an afternoon, and back it out just as quickly. That's what lets a team this size keep up with the business.

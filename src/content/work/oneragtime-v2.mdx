@@ -30,15 +30,15 @@ The thing I was most scared of was a launch weekend: switch everything over on a
 
 <StranglerFig />
 
-**First, a new UI next to the old one.** I rebuilt the back-office screens to be clearer and more modern, with numbers formatted the way a mostly French team expects. The new version lived on its own domain and talked to the same old backend, while the old version stayed up on another. People could use whichever they liked. Over a few months more and more of the team stopped opening the old one, until nobody did.
+**First, a new UI next to the old one.** I rebuilt the back-office screens in Vue 3, built around how the team actually used them. The new version lived on its own domain and talked to the same old backend, while the old version stayed up on another. People could use whichever they liked. Over a few months more and more of the team stopped opening the old one, until nobody did.
 
-**Then, a new backend and schema.** I redesigned the schema based on what I now knew about how the product was actually used: removing columns that duplicated data held elsewhere, merging overlapping tables and dropping fields nothing used. I wrote an ETL script that takes a backup of the old database and produces a fully populated database in the new schema. I ran it on my machine against production copies, pointed a second version of the new UI at the result, and checked that everything matched the old system. That part took about three months.
+**Then, a new backend and schema.** I designed a new schema (more on that below) and wrote an ETL script that takes a backup of the old database and produces a fully populated database in the new schema. I ran it on my machine against production copies, pointed a second version of the new UI at the result, and checked that everything matched the old system. That part took about three months.
 
 **Last, the investor app.** By then the new backend and the internal app shared one repository, so adding the investor-facing platform on top was much simpler. All of it, everyone's context, conventions and history, was in one place.
 
 About seven months in, we switched over completely.
 
-I started this with Cursor and moved more and more to Claude as it went. Having everything in one clean repository helped the agents a lot, and the more I corrected them, the better they got at following the patterns. It's the biggest and hardest build I've done so far.
+I started this with Cursor and moved more and more to Claude as it went. Having everything in one clean repository helped the agents a lot, and the more patterns I wrote down, the better they followed them. It's the biggest and hardest build I've done so far.
 
 ## Bits that were harder than they looked
 
@@ -46,9 +46,9 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 **Getting the same numbers.** Before the switch, I checked the new system's portfolio numbers against the old one and went through every difference until the only ones left were changes we'd chosen on purpose.
 
-**Valuations.** In phase 1 the new screens needed figures the old schema didn't store, such as value after tax and carry, euro amounts and cash already returned from exits, so I computed them whenever a page asked for them. That was always correct and needed no migration, but every page load paid for it again. Once the new schema existed, I moved to computing on write: when a valuation changes, one engine loads the startup's data in 11 queries, computes every position in one pass and stores the results, so pages and totals just read them. A large startup takes about 0.3 s, and the whole portfolio around 7 s.
+**Valuations.** In the old system, saving a valuation set off a chain of saves across every related investment, around 1,500 queries for a large startup, and a recalculation could take minutes. Now one engine loads the startup's data in 11 queries, computes every position in one pass and stores the results, so pages and totals just read them. A large startup takes about 0.3 s, and the whole portfolio around 7 s.
 
-**The database move.** Going from MySQL to Postgres at the same time meant the ETL script had to be safe to run again and again. I practised it on copies of production until it was dull, and then ran it for real once.
+**Changing database engine.** Moving from MySQL to Postgres in the same step had its own traps. Postgres doesn't move the id sequence along when you insert rows with explicit ids, so the next normal insert collides, and `TRUNCATE ... CASCADE` follows foreign keys much further than you'd expect. Both showed up on copies of production, which is why I rehearsed the full run until it was dull and then ran it for real once.
 
 **Background work.** A lot of the platform happens outside a request: CRM and mailing-list syncs, daily emails, Slack alerts, document indexing, scheduled checks. That's about 60 Celery tasks on Redis. Two rules saved us the most trouble. Tasks are queued only after the database transaction commits, so a worker never looks for a row that doesn't exist yet. And anything that runs less often than hourly has to be a clock-time schedule, because a plain interval restarts its countdown every time the service redeploys, and some jobs would otherwise never run. A startup check refuses a schedule that breaks that rule.
 
@@ -56,7 +56,7 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 **Moving the CRM in-house.** In 2026 we moved investor relations and dealflow off Pipedrive and into the platform. I led the data side. The first import had silently dropped notes and activities, so I recovered more than 2,500 of them. Records from our two Pipedrive accounts needed their own ids, because the two accounts' ids overlapped. And re-running the import kept creating duplicate companies, until a small alias map, checked with the team, pointed known variants at the existing record.
 
-**Keeping agents honest.** To trust that much agent-written code there were written specs before code, tests on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
+**Working with agents.** To trust that much agent-written code there were written specs before code, tests on every pull request, a preview environment for each pull request with a copy of production data, and an automated review before anything merged.
 
 ## Numbers
 

@@ -35,7 +35,7 @@ Once an assistant can act, the interesting questions stop being about prompts. T
 - **Half a tool call is no tool call.** If the model sends something malformed or cut off, it's refused, never partly run.
 - **Credentials are encrypted and kept out of the conversation.** The agent can use a key without seeing it, and logs are scrubbed.
 - **Anything risky waits for a yes.** Sensitive or irreversible actions pause until the user approves them.
-- **Scheduled jobs run once.** They survive restarts, never overlap, and fall back to another model provider if one is down or rate-limited.
+- **Scheduled jobs are dependable.** They survive restarts, never overlap or run twice, and fall back to another model provider if one is down.
 
 ## Where it's at
 
