@@ -59,16 +59,8 @@ The effect is that reviewing a change means clicking a link and trying it on rea
 
 `main` is production. Merging deploys the backend to Railway and the frontends to Vercel, each only if its own files changed. Backend CI runs `makemigrations --check`, so two parallel features that both add migrations conflict when the pull request is opened, not after merge.
 
-Staging still exists, but only as a fixed address for integrations that need one. Every Monday it restores the latest production snapshot and then fast-forwards to `main`, in that order, so new code never runs on an old schema.
-
-## What went wrong along the way
-
-Two parts didn't work the first time, and both taught us something.
-
-The weekly staging refresh relied on a scheduled GitHub workflow, which GitHub runs on a best-effort basis. Twice it started six to eight hours late, which left staging on week-old code over a fresh database for most of a day. The fix was to trigger the code sync from the database restore, so the order is built in rather than two clocks agreeing.
-
-The refresh also reported its health to a heartbeat endpoint, and that report was failing silently: the container image had no CA certificates, so every HTTPS call to the heartbeat and to Slack failed quietly, while the backup upload worked because its tool ships its own certificates. An alert that can fail without anyone noticing needs its own proof that it's alive.
+Staging still exists, but only as a fixed address for integrations that need one. Every Monday it restores the latest production snapshot and then fast-forwards to `main`, in that order: the code sync is triggered by the database restore, so new code never runs on an old schema.
 
 ## Why it works
 
-Each piece is small. Together they mean an agent or a person can go from idea to a reviewed, tested, previewed change on production data in an afternoon, and back it out just as quickly. That's what lets a team this size keep up with the business.
+Each piece is small. Together they mean an agent or a person can go from idea to a reviewed, tested, previewed change on production data in an afternoon. That's what lets a team this size keep up with the business.
