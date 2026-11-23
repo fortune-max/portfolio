@@ -2,8 +2,8 @@
 title: ThinClaw
 order: 4
 label: ThinClaw
-headline: An assistant that does the recurring work for you.
-summary: An AI assistant you message on Telegram. It connects to the services you already use, runs jobs on a schedule, writes and runs code in its own sandbox, and asks before anything risky. I use it every day.
+headline: An assistant that learns my taste and handles the routine.
+summary: An AI assistant I message on Telegram. It learns what I like, runs my routine jobs on a schedule, keeps my notes in order, and asks before anything that moves money or can't be undone. I use it every day.
 role: Solo project
 period: Mar 2026 – now
 stack: [TypeScript, Node.js, SQLite, React, grammY, Linux sandboxing]
@@ -18,31 +18,28 @@ import AgentPrinciples from '../../components/diagrams/AgentPrinciples.astro';
 
 ## What it does
 
-Most of what I use it for is work that would otherwise need remembering every day:
+I message it like a person, by text or voice, and it acts across the services I've connected.
 
-- **A morning brief.** It reads the last day of email and sends a short summary before I start work.
-- **Reading picked for me.** It goes through the link newsletters I subscribe to, shortlists what fits what I've liked before, and sends three to five picks, each with a two-line summary and why it's there.
-- **Keeping score of what I read and watch.** When I finish a book, film or series, it asks for a score and a line on why, and when something has stalled it asks whether I'm still on it. Those scores, across about 2,600 books, videos, films, shows and podcasts, are what the picks are based on.
-- **A coding coach.** Each morning it sends one interview problem without its title, avoids ones I've just done and brings back patterns I got wrong. On Saturdays it runs a timed mock when I say I'm ready.
-- **A weekly payment, checked twice.** A recurring transfer goes to whoever is next in a rotation, but only after the bank confirms the recipient's name, and only once I approve it in the chat.
-- **Smaller things:** bus arrivals, bike availability, supermarket prices, music.
+**It learns my taste.** There's far more worth reading, watching and listening to than I'll ever have time for, so the hard part is choosing. ThinClaw learns from what I finish and how I rate it: about 2,600 books, films, shows, videos and podcasts so far. Each morning it goes through the newsletters I subscribe to and sends the three to five pieces most likely to be worth my time, each with a two-line summary and why it picked it. When I finish something, it asks what I thought, so the next picks get better.
 
-Jobs are set up in plain words ("every weekday at 8, summarise my email"), and a job that has nothing to report stays quiet. It's built for several people: each user has their own workspace, sandbox, plugins and choice of model.
+**It handles the routine.** A short brief of the last day's email before I start work, and a weekly payment that goes out once I approve it in the chat. I set these up in plain words, like "every weekday at 8, summarise my email".
+
+**It's useful in between.** I ask it how much I'd probably like a film or book I'm considering, based on how I've rated similar ones. I tell it things to remember and it files them in the right note, so "add oat milk" lands on the grocery list. And it covers the small stuff: bus arrivals, bike availability, supermarket prices, music.
+
+It's built for several people: each user has their own workspace, sandbox, plugins and choice of model.
 
 ## How I think about safety
 
 <AgentPrinciples />
 
-Once an assistant can act, the interesting questions stop being about prompts. They're about whose data this is, what happens if the code it wrote loops forever, and who said it could send that email or that money. These are the rules I hold it to:
+Once an assistant can act, the important questions stop being about prompts. They're about keeping each person's data and code apart, and making sure nothing irreversible happens without a yes. These are the rules I hold it to:
 
-- **Everyone's code runs in their own sandbox,** with limits per user. If isolation isn't available, the code doesn't run. There's no fallback that skips it.
-- **Plugin credentials stay with the plugin.** They go only to that plugin's code, never to the model or the shell, and once saved they can be replaced but never shown again, not even to their owner.
-- **Anything risky waits for a yes, enforced in code.** Payments, crypto sends and some commands pause for a Yes/No in the chat. For a bank transfer, the recipient is verified with the bank first, so you approve what will actually be sent, not the model's description of it.
-- **Scheduled jobs are dependable.** They fire on time even when the server is asleep, run at most once even across restarts, and fall back to another model provider if one is down.
-- **A partial read is never a deletion.** Syncs with outside services only treat something as removed after a complete read, so an expired login or a rate limit can't wipe anyone's history.
+- **Everyone's code runs in their own sandbox,** with limits per user.
+- **Plugin credentials stay with the plugin.** They go only to that plugin's code, never to the model or the shell, and once saved they can be replaced but never shown again.
+- **Anything that moves money, deletes or overwrites, or reaches other people waits for a yes.** The pause is enforced in code, not in the prompt. For a payment, you approve the recipient as the bank has it, not the model's description of them.
 
 ## How it's built
 
-I decide what to build and why, approve every design and every deploy, and use it daily to find what's wrong. Coding agents turn our discussions into specs and plans, write the code and the tests, and a fresh agent reviews each branch before it merges. Those reviews have caught real bugs, including a way for a newsletter link to redirect the assistant to an internal address. It runs on one small server for about $1–2 a month in model calls.
+I decide what to build and why, approve every design and every deploy, and use it daily to find what to improve. Coding agents turn our discussions into specs and plans, write the code and the tests, and a fresh agent reviews each branch before it merges. It runs on one small server for about $1–2 a month in model calls.
 
 There's a public overview at [github.com/fortune-max/thinclaw-showcase](https://github.com/fortune-max/thinclaw-showcase).
