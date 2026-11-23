@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MonoLabel from '../components/MonoLabel.astro';
 const pdf = '/cv/Fortune-Max-Eguakun-CV.pdf';
+// Opens the PDF without the viewer's thumbnail side panel.
+const view = `${pdf}#navpanes=0`;
 ---
 <BaseLayout title="CV" description="CV of Fortune Max-Eguakun, senior full-stack engineer in Barcelona: fintech platforms and LLM tools.">
   <section class="tone-dark page">
@@ -11,9 +13,9 @@ const pdf = '/cv/Fortune-Max-Eguakun-CV.pdf';
       <p class="lede">Two pages, last updated November 2026. If you need a version for a specific role, ask.</p>
       <p class="actions mono">
         <a class="btn" href={pdf} download>Download CV (PDF) ↓</a>
-        <a href={pdf} target="_blank" rel="noopener">Open in a new tab ↗</a>
+        <a href={view} target="_blank" rel="noopener">Open in a new tab ↗</a>
       </p>
-      <object class="viewer" data={pdf} type="application/pdf" aria-label="CV preview">
+      <object class="viewer" data={view} type="application/pdf" aria-label="CV preview">
         <p>Your browser can't show PDFs inline. <a href={pdf} download>Download the CV</a> instead.</p>
       </object>
     </div>

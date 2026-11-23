@@ -1,11 +1,11 @@
-// Renders the General CV (../cv/cv-general.html) to public/cv/Fortune-Max-Eguakun-CV.pdf. Run: npm run cv
+// Renders the Systems CV (../cv/cv-systems-doc.html, kept in sync with the Google Doc) to public/cv/Fortune-Max-Eguakun-CV.pdf. Run: npm run cv
 import { chromium } from '@playwright/test';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const src = path.resolve(root, process.env.CV_SOURCE ?? '../cv/cv-general.html');
+const src = path.resolve(root, process.env.CV_SOURCE ?? '../cv/cv-systems-doc.html');
 const out = path.join(root, 'public/cv/Fortune-Max-Eguakun-CV.pdf');
 mkdirSync(path.dirname(out), { recursive: true });
 
