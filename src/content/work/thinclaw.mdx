@@ -2,8 +2,8 @@
 title: ThinClaw
 order: 4
 label: ThinClaw
-headline: An assistant that learns my taste and handles the routine.
-summary: An AI assistant I message on Telegram. It learns what I like, runs my routine jobs on a schedule, keeps my notes in order, and asks before anything that moves money or can't be undone. I use it every day.
+headline: An assistant with its own computer, that learns my taste.
+summary: An AI assistant I message on Telegram, with its own Linux environment. It works on code and projects with me from my phone, learns what I like, runs my routine jobs, and asks before anything that moves money or can't be undone. I use it every day.
 role: Solo project
 period: Mar 2026 – now
 stack: [TypeScript, Node.js, SQLite, React, grammY, Linux sandboxing]
@@ -20,6 +20,10 @@ import AgentPrinciples from '../../components/diagrams/AgentPrinciples.astro';
 
 I message it like a person, by text or voice, and it acts across the services I've connected.
 
+**It has its own computer.** Every user gets a private Linux environment with a full shell and their own storage, which stays between conversations. So it does the work instead of describing it: it can clone a GitHub repository and answer questions about the code, make a change to one of my projects while I'm out, write an article or a small web page and send me a link to it, or build a little browser game I can play from that link.
+
+**It keeps track of ongoing work.** Longer things live in projects, each with its own brief, notes, files and history. I can pick one up from my phone days later, ask where it stands, and carry on.
+
 **It learns my taste.** There's far more worth reading, watching and listening to than I'll ever have time for, so the hard part is choosing. ThinClaw learns from what I finish and how I rate it: about 2,600 books, films, shows, videos and podcasts so far. Each morning it goes through the newsletters I subscribe to and sends the three to five pieces most likely to be worth my time, each with a two-line summary and why it picked it. When I finish something, it asks what I thought, so the next picks get better.
 
 **It handles the routine.** A short brief of the last day's email before I start work, and a weekly payment that goes out once I approve it in the chat. I set these up in plain words, like "every weekday at 8, summarise my email".
@@ -28,7 +32,7 @@ I message it like a person, by text or voice, and it acts across the services I'
 
 Some of the most useful moments are small. I once sent it a photo of my shopping cart, and it told me what it would come to at the till by looking up every item in the supermarket's catalogue. It also tells me when my next bus is due, or whether the bike-share station near me has an e-bike free.
 
-It's built for several people: each user has their own workspace, sandbox, plugins and choice of model.
+It's built for several people, each with their own plugins and choice of model.
 
 ## How I think about safety
 
