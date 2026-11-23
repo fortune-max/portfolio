@@ -2,41 +2,47 @@
 title: ThinClaw
 order: 4
 label: ThinClaw
-headline: An AI assistant that actually does things.
-summary: A multi-user AI assistant you talk to over chat. It plans, uses tools, runs code in its own sandbox and works on a schedule. I'm building it on my own, and it's in private beta.
+headline: An assistant that does the recurring work for you.
+summary: An AI assistant you message on Telegram. It connects to the services you already use, runs jobs on a schedule, writes and runs code in its own sandbox, and asks before anything risky. I use it every day.
 role: Solo project
 period: Mar 2026 – now
-stack: [TypeScript, Node.js, SQLite, React, Docker, Linux sandboxing]
+stack: [TypeScript, Node.js, SQLite, React, grammY, Linux sandboxing]
 metrics:
-  - { label: TypeScript, value: "~38k lines" }
-  - { label: test cases, value: "~840" }
-  - { label: plugins, value: "19" }
-  - { label: status, value: "private beta" }
+  - { label: plugins, value: "20" }
+  - { label: scheduled jobs I run, value: "8" }
+  - { label: model cost, value: "~$1–2 / month" }
 links:
   - { label: Public overview, href: "https://github.com/fortune-max/thinclaw-showcase" }
 ---
 import AgentPrinciples from '../../components/diagrams/AgentPrinciples.astro';
 
-## What it is
+## What it does
 
-Most chat assistants are good at talking about a task and stop there. I wanted one that would actually do it: plan the steps, call the services you've connected, write and run some code if that's the quickest way, and come back later to do it again on a schedule.
+Most of what I use it for is work that would otherwise need remembering every day:
 
-ThinClaw is that, for more than one person at a time. You send it a message, it shows you what it's doing as it goes, and you can stop it at any point. Each user gets their own workspace, their own encrypted credentials and their own choice of model. Integrations are plugins you switch on or off.
+- **A morning brief.** It reads the last day of email and sends a short summary before I start work.
+- **Reading picked for me.** It goes through the link newsletters I subscribe to, shortlists what fits what I've liked before, and sends three to five picks, each with a two-line summary and why it's there.
+- **Keeping score of what I read and watch.** When I finish a book, film or series, it asks for a score and a line on why, and when something has stalled it asks whether I'm still on it. Those scores, across about 2,600 books, videos, films, shows and podcasts, are what the picks are based on.
+- **A coding coach.** Each morning it sends one interview problem without its title, avoids ones I've just done and brings back patterns I got wrong. On Saturdays it runs a timed mock when I say I'm ready.
+- **A weekly payment, checked twice.** A recurring transfer goes to whoever is next in a rotation, but only after the bank confirms the recipient's name, and only once I approve it in the chat.
+- **Smaller things:** bus arrivals, bike availability, supermarket prices, music.
 
-It's closed source for now, so this page is about how I think about it rather than how it's built. I'm happy to go through the details in an interview.
+Jobs are set up in plain words ("every weekday at 8, summarise my email"), and a job that has nothing to report stays quiet. It's built for several people: each user has their own workspace, sandbox, plugins and choice of model.
 
 ## How I think about safety
 
 <AgentPrinciples />
 
-Once an assistant can act, the interesting questions stop being about prompts. They're about whose data this is, what happens if the code it wrote loops forever, and who said it could send that email. These are the rules I hold it to:
+Once an assistant can act, the interesting questions stop being about prompts. They're about whose data this is, what happens if the code it wrote loops forever, and who said it could send that email or that money. These are the rules I hold it to:
 
 - **Everyone's code runs in their own sandbox,** with limits per user. If isolation isn't available, the code doesn't run. There's no fallback that skips it.
-- **Half a tool call is no tool call.** If the model sends something malformed or cut off, it's refused, never partly run.
-- **Credentials are encrypted and kept out of the conversation.** The agent can use a key without seeing it, and logs are scrubbed.
-- **Anything risky waits for a yes.** Sensitive or irreversible actions pause until the user approves them.
-- **Scheduled jobs are dependable.** They survive restarts, never overlap or run twice, and fall back to another model provider if one is down.
+- **Plugin credentials stay with the plugin.** They go only to that plugin's code, never to the model or the shell, and once saved they can be replaced but never shown again, not even to their owner.
+- **Anything risky waits for a yes, enforced in code.** Payments, crypto sends and some commands pause for a Yes/No in the chat. For a bank transfer, the recipient is verified with the bank first, so you approve what will actually be sent, not the model's description of it.
+- **Scheduled jobs are dependable.** They fire on time even when the server is asleep, run at most once even across restarts, and fall back to another model provider if one is down.
+- **A partial read is never a deletion.** Syncs with outside services only treat something as removed after a complete read, so an expired login or a rate limit can't wipe anyone's history.
 
-## Where it's at
+## How it's built
 
-It's in private beta. So far that's about 38,000 lines of TypeScript, around 840 tests and 19 plugins, built since March 2026. Coding agents do much of the implementation; I own the design, the specs and every review. There's a public overview at [https://github.com/fortune-max/thinclaw-showcase](https://github.com/fortune-max/thinclaw-showcase).
+I decide what to build and why, approve every design and every deploy, and use it daily to find what's wrong. Coding agents turn our discussions into specs and plans, write the code and the tests, and a fresh agent reviews each branch before it merges. Those reviews have caught real bugs, including a way for a newsletter link to redirect the assistant to an internal address. It runs on one small server for about $1–2 a month in model calls.
+
+There's a public overview at [github.com/fortune-max/thinclaw-showcase](https://github.com/fortune-max/thinclaw-showcase).
