@@ -47,7 +47,7 @@ Declining a finding is fine. Ignoring one isn't: silence reads as "missed it".
 
 This is the part that changed how we work the most. When a pull request touches the backend, it gets its own environment: the Django backend, a Celery worker, Redis, and its own Postgres database restored from last night's production snapshot. The frontends get Vercel previews that talk to that backend.
 
-My colleague built the database side, seeding each environment from the nightly snapshot. I did the routing, so each frontend preview finds its own backend, and the parts that made previews pleasant to use:
+Each environment is seeded from the nightly snapshot, and each frontend preview is routed to its own backend. A few things made previews pleasant to use:
 
 - **A stable address per pull request.** Vercel gives every push a new URL, and everything that keeps you signed in is tied to the hostname. A new URL meant logging in again on every push. Each pull request now gets a fixed hostname that survives pushes.
 - **One login for every preview.** The previews live under one parent domain, and the login cookie is set for that domain, so signing in once on staging signs you in to every preview. Google sign-in doesn't allow wildcard origins, so this was the only way to make it work without registering every preview.
