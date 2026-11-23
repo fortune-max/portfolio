@@ -26,9 +26,9 @@ Fetching first matters more than it looks. A worktree branched from a stale loca
 
 ## 2. Docs go in before the pull request, not after
 
-Our repository has a `CLAUDE.md` in each part of the stack, plus reference docs, specs and plans: over a hundred specs so far. Agents read them at the start of every session, so an out-of-date doc makes the next agent wrong.
+Our repository has a `CLAUDE.md` in each part of the stack, plus reference docs, specs and plans: over a hundred specs. Agents read them at the start of every session, so an out-of-date doc makes the next agent wrong.
 
-The rule is that the doc changes are part of the diff before the pull request exists. That includes one plain-English line in a weekly notes file, written for the person who reads our Friday update email rather than for an engineer. The email is now put together from that file, not reconstructed from `git log` on Friday afternoon.
+The rule is that the doc changes are part of the diff before the pull request exists. That includes one plain-English line in a weekly notes file, written for the person who reads our Friday update email rather than for an engineer. The email is put together from that file, not reconstructed from `git log` on Friday afternoon.
 
 The order matters for a practical reason too, which is the next section.
 
@@ -36,7 +36,7 @@ The order matters for a practical reason too, which is the next section.
 
 Every pull request gets an automatic review from Claude when it's opened. It looks for bugs and edge cases, security problems, performance issues, breaking changes to the API or data model, and mismatches between a backend change and the frontend code that calls it, which matters in a repository that holds both. It catches real bugs often enough that we treat it as part of the process, not a nice extra.
 
-Two rules came from using it for a few months:
+Two rules came from using it:
 
 - **One round, not two.** A second review on the fixes almost never found anything the first one hadn't. So we fix or explicitly decline each finding, wait for CI to pass, and merge. CI gates the merge; the review doesn't.
 - **Open the pull request when the diff is final.** The review runs when a pull request is opened, not on every push, so a quick amend after opening gets no review at all. That's also why the docs from section 2 have to be in the first push.
@@ -49,7 +49,7 @@ This is the part that changed how we work the most. When a pull request touches 
 
 Each environment is seeded from the nightly snapshot, and each frontend preview is routed to its own backend. A few things made previews pleasant to use:
 
-- **A stable address per pull request.** Vercel gives every push a new URL, and everything that keeps you signed in is tied to the hostname. A new URL meant logging in again on every push. Each pull request now gets a fixed hostname that survives pushes.
+- **A stable address per pull request.** Vercel gives every push a new URL, and logins are tied to the hostname, so each pull request gets its own fixed hostname that survives pushes and keeps you signed in.
 - **One login for every preview.** The previews live under one parent domain, and the login cookie is set for that domain, so signing in once on staging signs you in to every preview. Google sign-in doesn't allow wildcard origins, so this was the only way to make it work without registering every preview.
 - **Lazy builds.** A pull request that only changes the backend reuses the existing frontend builds, and a docs-only pull request builds nothing.
 
