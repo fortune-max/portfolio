@@ -4,7 +4,7 @@ description: I put our platform's data behind an MCP server so the business team
 pubDate: 2026-10-28
 ---
 
-For a while the most common thing I did at work wasn't writing features. It was answering questions. "Which investors have we talked to about this company?" "What did this startup report last quarter?" "Who do we know at that fund?" Each takes thirty seconds to answer and longer than that to get back into whatever I was doing.
+A lot of my day used to go on answering questions, not writing features. "Which investors have we talked to about this company?" "What did this startup report last quarter?" "Who do we know at that fund?" Each takes thirty seconds to answer and longer than that to get back into whatever I was doing.
 
 So I built an MCP server and let Claude answer them. MCP (Model Context Protocol) lets an assistant call tools you define. Now the business team asks Claude directly. This is what I ran into building it.
 
@@ -26,7 +26,7 @@ function project<T extends Record<string, unknown>>(rows: T[], fields?: string[]
 }
 ```
 
-If the model doesn't ask for anything specific, it gets a short default set instead of the full record. I did it to save tokens, but it seems to help the answers too, since there's less for the model to misread.
+If the model doesn't ask for anything specific, it gets a short default set instead of the full record. It saves tokens, and with less for the model to misread, the answers are better too.
 
 ## Problem 2: guessing field names
 
@@ -92,6 +92,6 @@ The model reads a tool's top-level description when choosing a tool, and the par
 
 The questions that used to come to me, and plenty that never would have. A brief on an investor before a call, with every email, note and meeting in one timeline. "Have we ever emailed anyone at this firm?" How much we hold in a company and at what valuation, or a fund's latest NAV by share class. A first draft of a follow-up that picks up an investor's history with us. And a few people have it run a brief every morning: the wires that came in, amounts raised per investor, and news across the portfolio.
 
-## What's missing
+## What's next
 
-I log which tools run and how long they take. What I'd really like to see is the questions people asked that the server couldn't answer, because that's the list of tools to build next. The schema guide is also still written by hand. It's a list of examples rather than a contract, so it can't break anything when it falls behind, but generating the common queries from what people actually ask would be better.
+Every tool call is logged with the question behind it, so the questions the server can't answer yet are the list of what to build next. The schema guide is still written by hand. It's a list of examples rather than a contract, so it can't break anything when it falls behind, but generating the common queries from what people actually ask would be better.

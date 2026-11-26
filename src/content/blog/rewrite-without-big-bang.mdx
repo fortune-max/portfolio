@@ -4,13 +4,13 @@ description: How we replaced an eight-year-old VC platform in stages, with a new
 pubDate: 2026-11-04
 ---
 
-Between late 2025 and mid-2026 I led the rewrite of the platform I work on: the system investors use to put money into startups, and that the back office uses for onboarding, signatures, valuations and quarterly reports. For most of it we were two engineers, down from six when I joined. I proposed it, planned it and wrote most of the code.
+Between late 2025 and mid-2026 I led the rewrite of the platform I work on: the system investors use to put money into startups, and that the back office uses for onboarding, signatures, valuations and quarterly reports. We were two engineers, down from six when I joined. I proposed it, planned it and wrote most of the code.
 
 What I wanted to avoid was building a new system for a year, switching everything over on one Friday, and spending Monday finding out which investor's numbers were wrong. So we moved it over in stages, and each stage had to be useful on its own.
 
 ## Step 1: a new UI on the old backend
 
-The first thing people saw was a new admin app. It lived on its own domain, talked to the old backend, and the old version stayed up on another domain, so people could use whichever they liked. Most of the team is French, so I also made sure numbers were formatted the way they expect.
+The first thing people saw was a new admin app. It lived on its own domain, talked to the old backend, and the old version stayed up on another domain, so people could use whichever they liked.
 
 Over a few months, fewer and fewer people opened the old one, until nobody did. That got the team a better interface early, and it meant I learned what every screen really needed by rebuilding it, not by reading old code.
 
