@@ -53,9 +53,7 @@ When a limit is hit, the model gets a plain message telling it to narrow the que
 
 ## Search, and when not to use it
 
-The server also has a semantic search over email, internal notes and decks. It's good at "what did we discuss with this fund?" and bad at "have we ever emailed this person?", because it always returns its closest matches, even when nothing really matches. When I checked a real batch of "have we contacted these people" questions answered that way, 43% of the "no" answers were wrong.
-
-The fix had two parts. I added an exact email-thread query to GraphQL, so a "no" from it can be trusted. And I moved the warning from a parameter description, where the model read it too late, into the first lines of the tool's description.
+The server also has a semantic search over email, internal notes and decks. It's good at "what did we discuss with this fund?" and bad at "have we ever emailed this person?", because it always returns its closest matches, even when nothing really matches. So questions like that go to an exact email-thread query in GraphQL, whose "no" can be trusted, and the search tool's description says so in its first lines, because that's what the model reads when it chooses a tool.
 
 ## Stack
 
