@@ -54,7 +54,7 @@ I started this with Cursor and moved more and more to Claude as it went. Having 
 
 **Knowing when something breaks.** With one or two engineers, nobody is watching dashboards, so the platform has to tell me. Every request is logged before the view runs, so even a crash leaves a record, with personal data redacted and a link to its Sentry issue. Server errors raise one Slack alert per problem, not one per request. It also alerts on failures that don't crash anything, such as a third-party quota running out.
 
-**Moving the CRM in-house.** In 2026 we moved investor relations and dealflow off Pipedrive and into the platform. I led the data side. The first import had silently dropped notes and activities, so I recovered more than 2,500 of them. Records from our two Pipedrive accounts needed their own ids, because the two accounts' ids overlapped. And a small alias map, checked with the team, means re-running the import matches known variants to the existing company.
+**Moving the CRM in-house.** In 2026 we moved investor relations and dealflow off Pipedrive and into the platform. I led the data side: I brought over more than 2,500 notes and activities an earlier import had missed. Records from our two Pipedrive accounts needed their own ids, because the two accounts' ids overlapped. And a small alias map, checked with the team, means re-running the import matches known variants to the existing company.
 
 **Working with agents.** Agents wrote a lot of the code, inside a process built for it: written specs before code, tests on every pull request, a preview environment with a copy of production data, and an automated review before anything merged.
 
