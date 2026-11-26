@@ -10,7 +10,7 @@ stack: [Python, Django, Pydantic, Gemini, Celery, Notion API]
 metrics:
   - { label: time per report, value: "4 h → 15 min" }
   - { label: analyst hours saved, value: "~100 / quarter" }
-  - { label: reports drafted, value: "almost all, since Q3 2025" }
+  - { label: sources, value: "cited for every figure" }
 ---
 import ReportPipeline from '../../components/diagrams/ReportPipeline.astro';
 
@@ -26,7 +26,7 @@ An analyst read each one, found the numbers, compared them with last quarter and
 
 ## What changed
 
-Since Q3 2025 a pipeline writes the first draft of almost every report, and the analyst checks it instead of writing it. A check takes 10–15 minutes, so the team gets back roughly 100 hours a quarter.
+A pipeline writes the first draft of each report, and the analyst checks it instead of writing it. A check takes 10–15 minutes, so the team gets back roughly 100 hours a quarter.
 
 The part I cared about most was trust. An LLM will read a deck and give you a confident summary, and in a report to investors a confident wrong number is worse than a missing one. So every figure in a draft has to say where it came from (slide 7, page 3), and the analyst checks it against that.
 
