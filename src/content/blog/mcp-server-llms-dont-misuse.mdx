@@ -46,7 +46,7 @@ function normalizeFields(fields: string[], allowed: Set<string>) {
 }
 ```
 
-Field names it still doesn't recognise aren't an error either. The response just includes a note listing the fields that do exist, and the model usually gets it right on the next try.
+Field names it still doesn't recognise aren't an error either. The response just includes a note listing the fields that do exist, so the model can correct itself on the next try.
 
 ## Problem 3: not knowing when to stop
 
@@ -78,7 +78,7 @@ export const graphqlQueryCfg = {
 
 The second tool, `core_graphql_schema`, takes no input at all and returns a short guide: the entry points, the filters, and example queries for the questions people actually ask.
 
-This solved the staleness problem: anything the backend adds to its schema can be queried the same day, with no change to the MCP server. It also made problems 1 and 2 mostly go away, because choosing fields is just how GraphQL works, and the guide shows the model the real names before it starts guessing. The limits moved into the backend's GraphQL view, so they apply to every query whichever way it arrives.
+This solved the staleness problem: anything the backend adds to its schema can be queried the same day, with no change to the MCP server. It also took care of problems 1 and 2, because choosing fields is just how GraphQL works, and the guide shows the model the real names before it starts guessing. The limits moved into the backend's GraphQL view, so they apply to every query whichever way it arrives.
 
 The other thing I'd tell anyone building one of these: fewer tools with fewer inputs work better. A tool with two inputs is hard to call wrong. Seventeen tools with five optional parameters each gave the model a lot of ways to pick almost the right one.
 
