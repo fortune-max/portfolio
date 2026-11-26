@@ -3,7 +3,7 @@ title: MCP server
 order: 2
 label: MCP server
 headline: Letting the business team ask the database themselves.
-summary: "An MCP server the business team uses through Claude for meeting prep, portfolio holdings and valuations, follow-up drafts and a daily brief. It started as 17 fixed tools and is now two GraphQL tools that never fall behind the backend."
+summary: "An MCP server the business team uses through Claude for meeting prep, portfolio holdings and valuations, investor emails drafted from our own data, and a daily brief. It started as 17 fixed tools and is now two GraphQL tools that never fall behind the backend."
 role: Designed and built
 period: 2025 – 2026
 stack: [TypeScript, Express, MCP SDK, GraphQL, Django, Docker, Railway]
@@ -16,9 +16,9 @@ import McpFlow from '../../components/diagrams/McpFlow.astro';
 
 ## Why
 
-On a small team the engineer ends up being the search box. "Have we talked to anyone at this company?" "What did this startup report last quarter?" "Who do we know at that fund?" None of these are hard, but each one used to be a message to me, and I'd lose ten minutes getting back into whatever I was doing.
+On a small team the engineer ends up being the search box. "Have we talked to anyone at this company?", "What did this startup report last quarter?", "Who do we know at that fund?" None of these are hard, but each one used to be a message to me, and I'd lose ten minutes getting back into whatever I was doing.
 
-The answers were already in the platform. What the team didn't have was a way to ask in plain English. MCP (Model Context Protocol) lets an assistant like Claude call tools you write, so I wrote some. The team uses it for meeting prep, portfolio holdings and valuations, follow-up drafts, and a morning brief that runs on its own.
+The answers were already in the platform. What the team didn't have was a way to ask in plain English. MCP (Model Context Protocol) lets an assistant like Claude call tools you write, so I wrote some. The team uses it whenever they need something from our data, such as meeting prep, portfolio holdings and valuations, an investor email drafted from everything we already know about them, or a scheduled morning brief.
 
 <McpFlow />
 
@@ -39,7 +39,11 @@ That fixed both problems at once. Anything the backend adds to its GraphQL schem
 
 I also learned that agents do better with fewer, simpler tools. Two inputs are hard to get wrong. Seventeen tools with five optional parameters each gave the model a lot of ways to pick slightly the wrong one.
 
-Alongside the two GraphQL tools sit three helpers: the semantic search described below, and two readers that pull the text out of a web page or a PDF.
+Alongside the two GraphQL tools sit three helpers: a semantic search over email, internal notes and decks, and two readers that pull the text out of a web page or a PDF.
+
+## Search, and when not to use it
+
+The semantic search is good at "what did we discuss with this fund?" and bad at "have we ever emailed this person?", because it always returns its closest matches, even when nothing really matches. So questions like that go to an exact email-thread query in GraphQL, whose "no" can be trusted, and the search tool's description says so in its first lines, because that's what the model reads when it chooses a tool.
 
 ## Limits live in the backend, not the prompt
 
@@ -51,12 +55,6 @@ Read-only isn't the same as harmless: a vague question can still ask for every r
 
 When a limit is hit, the model gets a plain message telling it to narrow the question, which is what a person would do too.
 
-## Search, and when not to use it
-
-The server also has a semantic search over email, internal notes and decks. It's good at "what did we discuss with this fund?" and bad at "have we ever emailed this person?", because it always returns its closest matches, even when nothing really matches. When I checked a real batch of "have we contacted these people" questions answered that way, 43% of the "no" answers were wrong.
-
-The fix had two parts. I added an exact email-thread query to GraphQL, so a "no" from it can be trusted. And I moved the warning from a parameter description, where the model read it too late, into the first lines of the tool's description.
-
 ## Stack
 
-TypeScript on Node with Express 5 and the official MCP SDK (Streamable HTTP), in front of the Django backend's GraphQL API. It's packaged with Docker, lives in the same repository as the backend, and runs on Railway next to the rest of the platform.
+TypeScript on Node with the official MCP SDK, in front of the Django backend's GraphQL API. It lives in the same repository as the backend, so the two ship together.

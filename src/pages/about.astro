@@ -13,11 +13,11 @@ import '../styles/prose.css';
       <div class="top">
         <div>
           <MonoLabel text="About" />
-          <h1 class="display title">I've been building things since I was 14.</h1>
+          <h1 class="display title">From a school computer lab to a platform investors use.</h1>
           <div class="prose intro">
             <p>
-            It started with small PvP games in the school computer lab. My friends would suggest characters, I'd make them,
-            and they'd use them as their avatars when we fought. It was just a small thing we did. From there I moved on to
+            It started when I was 14, with small PvP games for my friends. They'd suggest characters, I'd make them,
+            and they'd use them as their avatars when we fought. From there I moved on to
             modding GTA San Andreas, changing the gameplay, the maps and how things behaved.
             </p>
           </div>
@@ -26,17 +26,10 @@ import '../styles/prose.css';
       </div>
       <div class="prose">
         <p>
-          At some point I decided to learn it properly. Java came first, for small Android apps, then Python for
-          scripting. Android got me into Linux, since that's what's underneath, and Linux got me into rooting phones and
-          seeing how far I could push them. That's also where C++ came in, first for working with binaries and later for
-          competitive programming.
+          A few months later I decided to learn it properly, starting with Java for Android apps and Python for scripting. Wanting to see what was underneath Android took me into Linux and rooting phones, and C++ came with it: first for programs I could run on the phone itself, later for competitive programming.
         </p>
         <p>
-          The biggest thing I built in that phase was an anti-theft app for Android. It took a screenshot every 30 seconds
-          and stored it on the phone and in your Google Drive, and on every reboot it fetched and ran a script you'd set
-          up in advance: get the location, lock the device, remove a password, whatever you needed. The original idea
-          was actually simpler. If you saw something on your phone and forgot where, you could search your screenshots in
-          Drive and find it.
+          The biggest thing I built in that phase started as a memory for my own phone: using root access, it captured my screen every 30 seconds and saved it to my Google Drive, so if I'd seen something and forgotten where, I could search for it. It grew into an anti-theft tool that survives a factory reset: it hooks into a system service that starts on every boot, gives me remote access over SSH or Telnet, and runs a script I'd set up in advance, to report the phone's location, lock it or remove a password.
         </p>
 
         <h2>Engineering, then software</h2>
@@ -58,20 +51,13 @@ import '../styles/prose.css';
 
         <h2>Bank of America, and a Raspberry Pi</h2>
         <p>
-          In 2019 I had internship offers from Goldman Sachs and Bank of America, and picked Bank of America because they
-          could offer six months in Dublin instead of a summer. It was my first time on a big team, and I learned a lot
+          In 2019 I had internship offers from Goldman Sachs and Bank of America. I used the Goldman offer to ask Bank of America for a longer placement, and took theirs: six months in Dublin instead of a summer. It was my first time on a big team, and I learned a lot
           about reporting on my work and asking good questions. I helped with the move from Python 2 to 3 before Python
-          2's end of life and built a dashboard for viewing trades from different booking systems. The team was in London
-          and India.
+          2's end of life and built a dashboard for viewing trades from different booking systems, working with a team across London and India.
         </p>
         <p>
           Around the same time my university asked me to look at how they managed student results. It was an MS Access
-          database. I proposed something better and built it with two other students: registration, results, GPA, and
-          the result sheets that get printed and pinned up each semester. It's sensitive work, because a GPA decides
-          whether someone graduates. The school wanted it on their premises, so it first ran on a Raspberry Pi on campus,
-          which got tricky once I was travelling. The other two moved on, I kept going, and today it runs in the cloud
-          for a few cents per department a month, with the frontend on a free tier, so the only real bill is the domain.
-          Five departments still use it, and I'm still shipping updates.
+          database. I proposed something better and built the first version with two other students: registration, results, GPA, and the result sheets that get printed and pinned up each semester. It's sensitive work, because a GPA decides whether someone graduates. It first ran on a Raspberry Pi on campus, because the school wanted it on their premises. In 2024 I rebuilt it on my own, and today it runs in the cloud for a few cents per department a month, with the frontend on a free tier, so the only real bill is the domain. Five departments use it, and I'm still shipping updates.
         </p>
 
         <h2>Master's, and OneRagtime</h2>
@@ -80,24 +66,15 @@ import '../styles/prose.css';
           <figcaption>Barcelona, where I've lived since starting my master's.</figcaption>
         </figure>
         <p>
-          For my master's at Harbour.Space in Barcelona I picked front-end engineering because it was the side I knew
-          least. I'd always built backends and simple UIs. The degree showed me how much goes into a good interface:
-          frameworks, performance, WebAssembly, canvas, web workers. My capstone was CloudStation3. I'd moved to Barcelona
-          and couldn't bring my PlayStation, so I built a way to play my games from any device.
+          For my master's at Harbour.Space in Barcelona I majored in front-end engineering, because it was the side I knew least: I'd always built backends and kept the interfaces simple. The degree showed me how much engineering goes into an interface that feels fast, from how modern frameworks render and manage state to moving heavy work off the main thread with web workers, WebAssembly and canvas. I also took a minor in data science, which fed straight into the data and LLM work I was doing at OneRagtime. My capstone was <a href="/work/cloudstation3">CloudStation3</a>: I couldn't bring my PlayStation to Barcelona, so I built a way to stream my PS3 games to any device with a browser.
         </p>
         <p>
-          During the master's I started a one-year internship at OneRagtime, a VC platform, in April 2023. I'd already
-          been building things for years, so I could deliver more than they expected from an intern, and they offered me a
-          full-time role. I've kept trying ideas there: JSDoc types as a stopgap so the frontend and backend agreed on
-          their contracts without asking the whole team to switch tools, an LLM tool that pulls the important parts out of startup pitch
-          decks, AI-drafted quarterly reports, and then the rewrite of the whole platform. When I joined there were six engineers and a designer. People left
-          one at a time, and by mid-2025 we were two, with me owning the architecture and technical decisions.
+          During the master's, in April 2023, I joined OneRagtime, a VC platform, as an intern, and at the end of the year they offered me a full-time role. There were six engineers and a designer on the tech team then. People left one at a time, and by mid-2025 we were two, with me owning the architecture and the technical decisions. Along the way I built the tools the business runs on: an LLM tool that pulls the important parts out of pitch decks, <a href="/work/ai-reports">AI-drafted quarterly reports</a>, an <a href="/work/mcp-server">MCP server</a> that lets the team ask our data questions through Claude, and finally a <a href="/work/oneragtime-v2">rewrite of the whole platform</a>.
         </p>
 
         <h2>Now</h2>
         <p>
-          I'm still learning how far I can push AI tools in my own work. I build with coding agents every day, and on the
-          side I'm building ThinClaw, an AI assistant with its own computer that runs a lot of my day-to-day. I'm looking for a senior backend
+          I build with coding agents every day, and I keep pushing how much of my work they can take on. On the side I'm building <a href="/work/thinclaw">ThinClaw</a>, an AI assistant with its own computer that runs a lot of my day-to-day. I'm looking for a senior backend
           or full-stack role. If that's what you're hiring for, <a href="/contact">say hi</a>.
         </p>
       </div>

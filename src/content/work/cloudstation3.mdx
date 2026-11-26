@@ -3,7 +3,7 @@ title: CloudStation3
 order: 5
 label: CloudStation3
 headline: PS3 games, in a browser tab.
-summary: A game-streaming demo and my MEng capstone. A patched PS3 emulator runs on a Linux machine with a GPU, a C++ streamer sends the picture to your browser over WebRTC, and your gamepad drives a virtual joystick on the other end.
+summary: A game-streaming demo and my MEng capstone. A patched PS3 emulator runs on a Linux machine with a GPU, a C++ streamer sends the picture to your browser over WebRTC, and the browser sends your gamepad's input back to a virtual joystick there, so it feels like you're playing on that machine.
 role: Solo (MEng capstone)
 period: Nov 2023 – Sep 2024
 stack: [C++, FFmpeg, NVENC, WebRTC, Python, Vue 3, Linux uinput]
@@ -46,4 +46,4 @@ The streamer polls shared memory every 10 ms instead of using a proper signal. I
 
 ## Stack
 
-C++ with FFmpeg (libswscale and `h264_nvenc`) and libdatachannel for WebRTC. Python asyncio for signalling, Vue 3 and Vuetify for the player, and Linux libevdev and uinput for input. Deployed with Docker and Let's Encrypt.
+C++ with FFmpeg (libswscale and `h264_nvenc`) and libdatachannel for WebRTC. Python asyncio for signalling, Vue 3 and Vuetify for the player, and Linux libevdev and uinput for input.
