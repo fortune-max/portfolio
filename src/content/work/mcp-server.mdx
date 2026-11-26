@@ -39,7 +39,11 @@ That fixed both problems at once. Anything the backend adds to its GraphQL schem
 
 I also learned that agents do better with fewer, simpler tools. Two inputs are hard to get wrong. Seventeen tools with five optional parameters each gave the model a lot of ways to pick slightly the wrong one.
 
-Alongside the two GraphQL tools sit three helpers: the semantic search described below, and two readers that pull the text out of a web page or a PDF.
+Alongside the two GraphQL tools sit three helpers: a semantic search over email, internal notes and decks, and two readers that pull the text out of a web page or a PDF.
+
+## Search, and when not to use it
+
+The semantic search is good at "what did we discuss with this fund?" and bad at "have we ever emailed this person?", because it always returns its closest matches, even when nothing really matches. So questions like that go to an exact email-thread query in GraphQL, whose "no" can be trusted, and the search tool's description says so in its first lines, because that's what the model reads when it chooses a tool.
 
 ## Limits live in the backend, not the prompt
 
@@ -50,10 +54,6 @@ Read-only isn't the same as harmless: a vague question can still ask for every r
 - a 20-second database timeout, set per request
 
 When a limit is hit, the model gets a plain message telling it to narrow the question, which is what a person would do too.
-
-## Search, and when not to use it
-
-The server also has a semantic search over email, internal notes and decks. It's good at "what did we discuss with this fund?" and bad at "have we ever emailed this person?", because it always returns its closest matches, even when nothing really matches. So questions like that go to an exact email-thread query in GraphQL, whose "no" can be trusted, and the search tool's description says so in its first lines, because that's what the model reads when it chooses a tool.
 
 ## Stack
 
