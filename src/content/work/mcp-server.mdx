@@ -3,7 +3,7 @@ title: MCP server
 order: 2
 label: MCP server
 headline: Letting the business team ask the database themselves.
-summary: "An MCP server the business team uses through Claude for investor briefings, who we've talked to, and who we know at a company. It started as 17 fixed tools and is now two GraphQL tools that never fall behind the backend."
+summary: "An MCP server the business team uses through Claude for meeting prep, portfolio holdings and valuations, follow-up drafts and a daily brief. It started as 17 fixed tools and is now two GraphQL tools that never fall behind the backend."
 role: Designed and built
 period: 2025 – 2026
 stack: [TypeScript, Express, MCP SDK, GraphQL, Django, Docker, Railway]
@@ -18,7 +18,7 @@ import McpFlow from '../../components/diagrams/McpFlow.astro';
 
 On a small team the engineer ends up being the search box. "Have we talked to anyone at this company?" "What did this startup report last quarter?" "Who do we know at that fund?" None of these are hard, but each one used to be a message to me, and I'd lose ten minutes getting back into whatever I was doing.
 
-The answers were already in the platform. What the team didn't have was a way to ask in plain English. MCP (Model Context Protocol) lets an assistant like Claude call tools you write, so I wrote some. Someone on the team adds it to Claude once and then just asks, mostly for meeting prep and quick lookups.
+The answers were already in the platform. What the team didn't have was a way to ask in plain English. MCP (Model Context Protocol) lets an assistant like Claude call tools you write, so I wrote some. The team uses it for meeting prep, portfolio holdings and valuations, follow-up drafts, and a morning brief that runs on its own.
 
 <McpFlow />
 
